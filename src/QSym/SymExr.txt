@@ -1,0 +1,41 @@
+
+
+
+Syntax: op = Had | QFT
+
+        aop = Measure Locus | Classical Arith -- classical adding, subing, ... x + y. 
+
+        Bexp = x[n] --- x is the quantum array, and n is the index, 0 or 1 can be viewed as false and true
+             | x < y @ z[n] -- compare the values of array x and y, and then store the boolean result in z[n]. the final comparison result depends on z[n]. having side-effects
+
+        Range = x[Arith,Arith) -- x is a quantum array, ariths are classical nat number exprs.
+
+        Locus = list of Range -- make sure every ranges are disjoint
+
+        e = SKIP | Apply Locus Expr | Apply Locus op | Cast Locus Locus | Bind Var aop e | If BExp e | Seq e e
+        
+        
+State: Nor (type) having a length n : NorState Float RzValue --- boolean list, real is the amplitude
+     | Had (type) : HadState RzValue --- same as phi type in vqo (|0> + exp(i 2pi RzValue) |1>).
+     | En  (type) having a length n : EnState [(Float, RzValue)] --- the list size is max 2^n, and each rzvalue has length n.
+        
+Semantics: 
+
+       Apply Locus Expr (VQO) ---> for EnState l, for every element (a,b) in l, perform (a,Expr on b). perform interpt on the {rzvalue b} with Expr.
+                            --- provided that the type of EnState l is Locus (concat) Locus',
+                            --- EnState l is a quantum state, with possibly entanglement.
+                            --- Locus indicates the qubit positions.
+                            --- x[0,n) u y[10, 12), this indicates that in the entanglement state EnState l, 
+                            --- we have x[0,n) qubits arranged as prefix, and y[10,12) arranged as suffix
+                            ---- for every b in (a,b) in l, here, index 0 to n in b refers to the x[0,n) part, and n+10 to n+12 in b refers to the y[10,12) part 
+                            ---- Apply x[0,n) (rz_adder x n n M (* M represent a number m*))
+                            ---- the result is a new EnState l', where for every (a,b) in l, (a,b+M) in l', and |l| = |l'|
+                            ---- say another one EnState la having locus y[10, 12) u x[0,n)
+                            ---- if we do: Apply x[0,n) Expr, then need to cast EnState la to a new state EnState la' 
+                            ---- by pushing the locus to be x[0,n) u y[10, 12), perumutation on every b in la
+                            ---- then apply "Apply x[0,n) Expr" in EnState la' instead od EnState la. 
+                            
+     Apply x[0] Had --->    EnState l :type locus is x[0] u y[0,n) u x[1,10),
+                      ----  we create EnState l', 2|l| = |l'| , for each (a,b) in l, add {(a * (-1) ^ b[0], b), (a * (-1)^(flip b[0]), (flip b[0])++b[1..])} to l'.  
+     
+     Apply x[0,n) Had ---> repetitaion of the above

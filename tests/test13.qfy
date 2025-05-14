@@ -7,3 +7,4 @@ method postQFT(n:nat, q : Q[n], p : Q[n], base: nat, N:nat)
   q[0,n) *= QFT;
   //(en)q[0,n); //it is best if we do not need this
 }
+

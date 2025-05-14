@@ -1,0 +1,5 @@
+.history/
+.hypothesis/
+.qvenv/
+pybackend/__pycache__/
+.DS_Store

@@ -39,6 +39,7 @@ class ProgramTransformer(ExpVisitor):
             stmts = self.visitStmts(ctx.stmts())
         else:
             stmts = []
+ #       print('transformer', conds)
         return QXMethod(ctx.ID(), axiom, bindings,returns,conds,stmts)
 
     # Visit a parse tree produced by ExpParser#returna.
@@ -47,7 +48,7 @@ class ProgramTransformer(ExpVisitor):
             return []
         return self.visitBindings(ctx.bindings())
 
-    def dealWithList(self, op: str, specs: [QXSpec]):
+    def dealWithList(self, op: str, specs: list[QXSpec]):
         tmp = []
         if op == "requires":
             for elem in specs:
@@ -449,7 +450,8 @@ class ProgramTransformer(ExpVisitor):
     def visitLambdaT(self, ctx:ExpParser.LambdaTContext):
         ids = self.visitIds(ctx.ids())
         if ctx.omegaExpr() is None:
-            omega = QXCall('omega', [QXNum(0), QXNum(1)])
+            #change the function name to arith to distinguish it from the omega
+            omega = QXCall('arith') 
         else:
             omega = self.visitOmegaExpr(ctx.omegaExpr())
         if ctx.manyket() is None:

@@ -1,0 +1,51 @@
+
+method conditionaltest1(n:nat, q : Q[n], p : Q[n], i:nat, base: nat, N:nat)
+  requires 0 <= i < n
+  requires { q[0, i), p[0, n) : en(1) ↦ ∑ k ∈ [0, 2^i) . 1/sqrt(2^i) | k ⟩ | (base ^ k) % N ⟩ }
+  requires { q [i , n) : had ↦ |+⟩ }
+  ensures  { q [i+1 , n) : had ↦ |+⟩ }
+  ensures { q[0, i+1), p[0, n) : en(1) ↦ ∑ k ∈ [0, 2^(i+1)) . 1/sqrt(2^(i+1)) | k ⟩ | (base ^ k) % N ⟩ }
+{
+  //until ith qubit it's entangled, about to entangle (i+1)th
+  if (q[i]) { p[0, n) *= λ (x => |base ^ (2 ^ i) * x % N⟩); }
+  //(en)q[0,n); //it is best if we do not need this
+}
+
+predicate: 0 <= i < n 
+        /\ q[0, i), p[0, n) : en ↦ ∑ k ∈ [0, 2^i) . 1/sqrt(2^i) | k ⟩ | (base ^ k) % N ⟩ 
+        /\ q [i , n) : had ↦ |+⟩
+loc(u) = q[0, i), p[0, n) : en ↦ ∑ k ∈ [0, 2^i) . 1/sqrt(2^i) | k ⟩ | (base ^ k) % N ⟩ 
+loc(v) = q [i , n) : had ↦ |+⟩
+
+{
+  if (q[i]) { p[0, n) *= λ (x => |base ^ (2 ^ i) * x % N⟩); }
+}
+
+//sp(if C then S1 else S2, P) = sp(S1, C /\ P) \/ sp(S2, !C /\ P)
+
+0 <= i < n 
+/\ loc(u0) = q[0, i), p[0, n) : en(1)
+/\ value(u0) = ∑ k ∈ [0, 2^i) . 1/sqrt(2^i) | k ⟩ | (base ^ k) % N ⟩
+/\ value(u0.q[i]) == 1
+/\ loc(u) = q[0, i+1), p[0, n) : en(1)
+/\ value(u) = [0, 2^(i+1)) . 1/sqrt(2^(i+1)) | k ⟩ | (base ^ k) % N ⟩
+/\ loc(v0) = q[i, n)
+/\ loc(v) = q[i+1, n)
+/\ value(v0) = |+⟩
+/\ value(v) = |+⟩
+\/
+0 <= i < n 
+/\ loc(u0) = q[0, i), p[0, n) : en(1)
+/\ value(u0) = ∑ k ∈ [0, 2^i) . 1/sqrt(2^i) | k ⟩ | (base ^ k) % N ⟩
+/\ value(u0.q[i]) == 0
+/\ loc(u) = q[0, i+1), p[0, n) : en(1)
+/\ value(u) = [0, 2^(i+1)) . 1/sqrt(2^(i+1)) | k ⟩ | (base ^ k) % N ⟩
+/\ loc(v0) = q[i+1, n)
+/\ loc(v) = q[i+1, n)
+/\ value(v0) = |+⟩
+/\ value(v) = |+⟩
+
+//those two different cases eventually lead to the same result, 
+//since every qubit is in superposition, have to consider both cases. 
+//we should probably simplify the sp calculation in quantum setting. 
+

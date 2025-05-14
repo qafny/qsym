@@ -3,3 +3,4 @@
 .qvenv/
 pybackend/__pycache__/
 .DS_Store
+pybackend/SPVisitor.py

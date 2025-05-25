@@ -17,7 +17,7 @@ from SymEx import SymbolicExecutor
 
 def test_sp():
   
-    with open("tests/test3.qfy", "r") as f:
+    with open("tests/test10.qfy", "r") as f:
         code = f.read()
 
     # 2. Parse the code snippet using ANTLR4

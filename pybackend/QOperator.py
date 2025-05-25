@@ -21,7 +21,6 @@ class QOperator:
                 print(f"loci: {loci}, type_info: {type_info}, state: {state}, \nreg: {reg}")
                 if any(loc.ID() == reg for loc in loci):
                     found = True
-        #            print('check', self.state_manager.path_conds[0].ID(), loci)
                     if self.state_manager.path_conds:
                         if not any(loc.ID() == self.state_manager.path_conds[0].ID() for loc in loci):
                             path_reg = self.state_manager.path_conds[0].ID()
@@ -39,7 +38,7 @@ class QOperator:
                             print(f"loci: {loci}, reg: {reg}")
 
                         if isinstance(type_info, TyEn):
-                            self._apply_had2en(loci, type_info, state, reg)
+                            self._apply_qft2en(loci, type_info, state, reg, OpType.HADAMARD)
                         elif isinstance(type_info, TyHad):
                             self._apply_chad2had(loci, type_info, state, reg)
                         elif isinstance(type_info, TyNor):
@@ -47,9 +46,9 @@ class QOperator:
                     else:
 
                         if isinstance(type_info, TyEn):
-                            self._apply_had2en(loci, type_info, state, [reg])
+                            self._apply_qft2en(loci, type_info, state, [reg], OpType.HADAMARD)
                         elif isinstance(type_info, TyHad):
-                            self._apply_had2had(loci, type_info, state, [reg])
+                            self._apply_qft2had(loci, type_info, state, [reg], OpType.HADAMARD)
                         elif isinstance(type_info, TyNor):
                             self._apply_had2nor(loci, type_info, state, [reg])
 
@@ -100,10 +99,94 @@ class QOperator:
         pass
 
     def apply_qft(self, regs: List[str], qexp: QXSingle):
-        pass
+        """Apply QFT operation"""
+        curr = self.state_manager.get_curr_bind()
+        q_vars = curr.get('quantum', {})
+        #probably we can combine qft/hadmard.
+        #the loci should be able to check in variable. If the two or more regs from two variable,
+        #then we need to preprocess the loci, combine them to one.
+        #need to consider more loci instead of two.
+        for reg in regs:
+            found = False
+            for loci, type_info, state in q_vars.values():
+                print(f"loci: {loci}, type_info: {type_info}, state: {state}, \nreg: {reg}")
+                if any(loc.ID() == reg for loc in loci):
+                    found = True
+        #            print('check', self.state_manager.path_conds[0].ID(), loci)
+                    if self.state_manager.path_conds:
+                        if not any(loc.ID() == self.state_manager.path_conds[0].ID() for loc in loci):
+                            path_reg = self.state_manager.path_conds[0].ID()
+                            # Find the loci for the path_reg in the current quantum variables
+                            path_loci = None
+                            for l2, t2, s2 in q_vars.values():
+                                if any(loc.ID() == path_reg for loc in l2):
+                                    path_loci = l2
+                                    break
+                            if path_loci is None:
+                                raise AssertionError(f"Register {path_reg} from path condition not found in current quantum variables.")
+                            # Merge the loci
+                            loci = [loc for loc in path_loci if loc.ID() == path_reg] + loci 
+                            reg = [path_reg, reg]
+                            print(f"loci: {loci}, reg: {reg}")
+
+                        if isinstance(type_info, TyEn):
+                            self._apply_cqft2en(loci, type_info, state, reg)
+                        elif isinstance(type_info, TyHad):
+                            self._apply_cqft2had(loci, type_info, state, reg)
+                        elif isinstance(type_info, TyNor):
+                            self._apply_cqft2nor(loci, type_info, state, reg)
+                    else:
+
+                        if isinstance(type_info, TyEn) or isinstance(type_info, TyNor):
+                            self._apply_qft2en(loci, type_info, state, [reg], OpType.QFT)
+                        elif isinstance(type_info, TyHad):
+                            self._apply_qft2had(loci, type_info, state, [reg], OpType.QFT)
+                    break
 
     def apply_rqft(self, regs: List[str], qexp: QXSingle):
-        pass
+        """Apply QFT operation"""
+        curr = self.state_manager.get_curr_bind()
+        q_vars = curr.get('quantum', {})
+        #probably we can combine qft/hadmard.
+        #the loci should be able to check in variable. If the two or more regs from two variable,
+        #then we need to preprocess the loci, combine them to one.
+        #need to consider more loci instead of two.
+        for reg in regs:
+            found = False
+            for loci, type_info, state in q_vars.values():
+                print(f"loci: {loci}, type_info: {type_info}, state: {state}, \nreg: {reg}")
+                if any(loc.ID() == reg for loc in loci):
+                    found = True
+        #            print('check', self.state_manager.path_conds[0].ID(), loci)
+                    if self.state_manager.path_conds:
+                        if not any(loc.ID() == self.state_manager.path_conds[0].ID() for loc in loci):
+                            path_reg = self.state_manager.path_conds[0].ID()
+                            # Find the loci for the path_reg in the current quantum variables
+                            path_loci = None
+                            for l2, t2, s2 in q_vars.values():
+                                if any(loc.ID() == path_reg for loc in l2):
+                                    path_loci = l2
+                                    break
+                            if path_loci is None:
+                                raise AssertionError(f"Register {path_reg} from path condition not found in current quantum variables.")
+                            # Merge the loci
+                            loci = [loc for loc in path_loci if loc.ID() == path_reg] + loci 
+                            reg = [path_reg, reg]
+                            print(f"loci: {loci}, reg: {reg}")
+
+                        if isinstance(type_info, TyEn):
+                            self._apply_cqft2en(loci, type_info, state, reg)
+                        elif isinstance(type_info, TyHad):
+                            self._apply_cqft2had(loci, type_info, state, reg)
+                        elif isinstance(type_info, TyNor):
+                            self._apply_cqft2nor(loci, type_info, state, reg)
+                    else:
+
+                        if isinstance(type_info, TyEn) or isinstance(type_info, TyNor):
+                            self._apply_qft2en(loci, type_info, state, [reg], OpType.RQFT)
+                        elif isinstance(type_info, TyHad):
+                            self._apply_qft2had(loci, type_info, state, [reg], OpType.RQFT)
+                    break
 
     def apply_cast(self, regs: List[str], ty: QXQTy):
         """Handle quantum cast"""
@@ -154,10 +237,13 @@ class QOperator:
         print(f"\nnew_state: {new_state}")
         self.state_manager.update_state(loci, new_type, new_state, 'cast_had2en')
 
-    def _apply_had2en(self, loci: list[QXQRange], type_info, state: QXSum, regs):
-        """Apply H gate to entangled state"""
+    def _apply_qft2en(self, loci: list[QXQRange], type_info, state: QXSum, regs, op_type: OpType):
+        """Apply QFT/H gate to entangled state"""
+        if state.sums():
+            new_sums = state.sums().copy()
+        else: 
+            new_sums = []
         new_kets = state.kets().copy()
-        new_sums = state.sums().copy()
         print(f"regs: {regs}")          
    
         for reg in regs:
@@ -173,18 +259,26 @@ class QOperator:
             new_sums.insert(reg_idx, new_sum)
             
             curr_vec = state.kets()[reg_idx].vector()
-            new_vector = self.transformer.trans_vec(curr_vec, sum_var, reg_idx, OpType.HADAMARD)
+            new_vector = self.transformer.trans_vec(curr_vec, sum_var, reg_idx, op_type)
             new_kets[reg_idx] = QXSKet(new_vector)
         new_flag_num = len(new_sums)
-        new_type = TyEn(flag=QXNum(num=new_flag_num))  
-        new_amp = self.transformer.trans_amp(state, OpType.HADAMARD, new_sums=new_sums, new_kets=new_kets, reg_idx=reg_idx)
+        new_type = TyEn(flag=QXNum(num=new_flag_num))
+        print(f"\nQOperators: state{state}\n, {op_type}, \n new_sums:{new_sums}, \n new_ket: {new_kets}, \n {reg_idx}")
+        new_amp = self.transformer.trans_amp(state, op_type, new_sums=new_sums, new_kets=new_kets, reg_idx=reg_idx)
         
         # Update the amplitude for the new state
         new_state = QXSum(sums=new_sums, amp=new_amp, kets=new_kets)
-        self.state_manager.update_state(loci, new_type, new_state, 'H')
+        
+        if op_type==OpType.HADAMARD:
+            self.state_manager.update_state(loci, new_type, new_state, 'H')
+        elif op_type==OpType.QFT:
+            self.state_manager.update_state(loci, new_type, new_state, 'QFT')
+        elif op_type==OpType.RQFT:
+            self.state_manager.update_state(loci, new_type, new_state, 'RQFT')
 
-    def _apply_had2had(self, loci, type_info, state: QXTensor, regs):
-        """Apply H gate to Hadamard basis state"""
+    #the had type is assume to have all 0 or all 1 of the register
+    def _apply_qft2had(self, loci, type_info, state: QXTensor, regs, op_type: OpType):
+        """Apply H/QFT gate to Hadamard basis state"""
         new_kets = state.kets().copy()
         
         for reg in regs:
@@ -223,7 +317,7 @@ class QOperator:
         self.state_manager.update_state(loci, new_type, new_state, 'H')
 
     def _apply_chad2nor(self, loci, type_info, state: QXTensor, regs):
-        """Cast Hadamard basis state to normal state"""
+        """control hadamard on nor type register"""
         new_kets = []
         new_sums = []
         sum_vars = []
@@ -232,10 +326,12 @@ class QOperator:
         print(f"regs: {regs}, \n\nloci: {loci}, \n\nstate: {state}")
 
 
-        # Introduce a sum variable for each ket (qubit)
+        # Introduce a sum variable for each register
         for i, reg in enumerate(regs):
             sum_var = self.state_manager.get_fresh_sum_var()
             sum_vars.append(sum_var)
+
+            #TODO need to move the transformation to ExprTransformer
             if isinstance(loci[i].crange().right(), QXNum):
                 new_sum = QXCon(sum_var, QXCRange(QXNum(0),
                         QXNum(2**loci[i].crange().right().num())))
@@ -283,7 +379,7 @@ class QOperator:
                 new_kets.insert(i, QXSKet(QXBin('*', QXBind(sum_vars[0]), QXBind(sum_var))))
             
 
-
+#            new_amp = self.transformer.trans_amp(state, op_type, new_sums=new_sums, new_kets=new_kets, reg_idx=reg_idx)
         new_type = TyEn(flag=QXNum(num=len(new_sums)))
         new_state = QXSum(sums=new_sums, amp=new_amp, kets=new_kets)
         self.state_manager.update_state(loci, new_type, new_state, 'CH')
@@ -365,3 +461,22 @@ class QOperator:
         
         new_state = QXTensor(new_kets)
         self.state_manager.update_state(loci, type_info, new_state, 'λ')
+
+    #TODO test
+    def _apply_qft2nor(self, loci, type_info, state: QXTensor, regs: list[str], op_type: OpType):
+        new_kets = state.kets().copy()
+
+        for reg in regs:
+            reg_idx = next(j for j, loc in enumerate(loci) if loc.ID() == reg)
+            curr_ket = state.kets()[reg_idx].vector()
+            sum_var = self.state_manager.get_fresh_sum_var()
+            if isinstance(loci[reg_idx].crange().right(), QXBind):
+                new_sum = QXCon(sum_var, QXCRange(QXNum(0), 
+                        QXBin('^', QXNum(2), QXBind('n'))))
+            new_vector = self.transformer.trans_vec(curr_ket, None, reg_idx, OpType.QFT)
+            new_ket = QXSKet(new_vector)
+        
+        new_amp = self.transformer.trans_amp(state, OpType.QFT, new_sums=new_sum, new_kets=new_kets, reg_idx=reg_idx)
+        new_state = QXSum(sums=new_sum, amp=new_amp, kets=new_kets)
+        
+        self.state_manager.update_state(loci, type_info, new_state, 'QFT')

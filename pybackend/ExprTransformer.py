@@ -11,9 +11,9 @@ class ExprTransformer:
     def trans_vec(self, vector, param: str, reg_idx: int, op_type: OpType, **kwargs):
         """Transform vector expressions"""
         # Handle Hadamard transformations
-        if op_type == OpType.HADAMARD:
+        if op_type == OpType.HADAMARD or op_type == OpType.QFT or op_type == OpType.RQFT:
             if isinstance(vector, (QXNum, QXHad, QXBind, QXSKet)):
-                return self._trans_had_bind(vector, param, reg_idx)
+                return self._trans_qft_bind(vector, param, reg_idx, op_type)
             elif isinstance(vector, QXBin):
                 if self.state_manager.path_conds:
                     return QXBin('*', QXBind(param), QXBin(vector.op(), vector.left(), vector.right()))
@@ -21,11 +21,15 @@ class ExprTransformer:
             #    return self._trans_had_bin(vector, param, reg_idx)
         
         # Handle Lambda transformations
-        if op_type == OpType.LAMBDA:
+        elif op_type == OpType.LAMBDA:
             if isinstance(vector, QXBind):
                 return self._trans_lambda_bind(vector, param, reg_idx, **kwargs)      
             elif isinstance(vector, QXBin):
                 return self._trans_lambda_bin(vector, param, reg_idx, op_type, **kwargs)
+        
+        # elif op_type == OpType.QFT:
+        #     if isinstance(vector, QXBind):
+        #         return self._trans_qft_bind(vector, param, reg_idx)
         
         return vector
             
@@ -33,11 +37,9 @@ class ExprTransformer:
         """Transform amplitude expressions"""
         if op_type == OpType.LAMBDA:
             return self._trans_lambda_amp(state, **kwargs)
-        elif op_type == OpType.HADAMARD:
-            return self._trans_had_amp(state, **kwargs)
+        elif op_type == OpType.HADAMARD or op_type == OpType.QFT or op_type == OpType.RQFT:
+            return self._trans_qft_amp(state, op_type, **kwargs)
         return state.amp()
-
-
     def _trans_lambda_bind(self, vector: QXBind, param: str, reg_idx: int, **kwargs) -> QXBind:
         """Transform binding for lambda operation"""
         kets = kwargs.get('kets')
@@ -62,18 +64,21 @@ class ExprTransformer:
         
         print(f"\nvector: {vector}, param: {param}, reg_idx: {reg_idx}")
 
-        
-
-    def _trans_had_bind(self, vector: QXBind, param: str, reg_idx: int, **kwargs) -> QXBind:
+    def _trans_qft_bind(self, vector, param: str, reg_idx: int, op_type: OpType, **kwargs) -> QXBind:
         """Transform binding for Hadamard operation"""
 
         if isinstance(vector, QXNum):
-            # Computational basis states transform to Hadamard basis        
-            num = vector.num()
-            if num == 0:
-                return QXHad('+')
-            elif num == 1:
-                return QXHad('-')
+            # Computational basis states transform to Hadamard basis   
+            if op_type == OpType.HADAMARD:      
+                num = vector.num()
+                if num == 0:
+                    return QXHad('+')
+                elif num == 1:
+                    return QXHad('-')
+                #TODO other cases
+            elif op_type == OpType.QFT:
+                return QXBind(param)
+
         elif isinstance(vector, QXHad):
             # Hadamard basis states transform to computational basis
             if vector.state() == '+':
@@ -87,25 +92,16 @@ class ExprTransformer:
                 #     return QXBin('*', QXBind(vector.ID()), QXBind(param))
                 return QXBind(param)  # Replace with new sum variable
         
-        # elif isinstance(vector, QXBin):
-        #     left = self._trans_had_bind(vector.left(), vector.left(), reg_idx, **kwargs)
-        #     right = self._trans_had_bind(vector.right(), vector.right(), reg_idx, **kwargs)
-        #     if self. state_manager.path_conds:
-        # #        print(self.state_manager.path_conds, param, '\nafter',  left, right)
-        #         return QXBin('*', QXBind(param), QXBin(vector.op(), left, right))
-        #     return QXBin(vector.op(), left, right)
         elif isinstance(vector, QXSKet):
             # Transform the vector inside the ket
             new_vec = self._trans_had_bind(vector.vector(), param, reg_idx, **kwargs)
             return QXSKet(new_vec)
-         
+               
         return vector
-
-
-    def _trans_had_amp(self, state: QXQState, **kwargs):
-        """Transform amplitude for Hadamard operation"""
-        
-        if isinstance(state, QXSum):
+    
+    def _trans_qft_amp(self, state: QXQState, op_type: OpType, **kwargs):
+        """Transform amplitude for Hadamard operation"""     
+        if isinstance(state, QXSum) or (isinstance(state, QXTensor) and op_type == OpType.QFT) or (isinstance(state, QXTensor) and op_type == OpType.RQFT):
             new_sums = kwargs.get('new_sums')
             new_kets = kwargs.get('new_kets')
             reg_idx = kwargs.get('reg_idx')
@@ -131,7 +127,7 @@ class ExprTransformer:
                         )
                     )
                  )
-                )
+            )
             elif isinstance(new_sums[reg_idx].range().right(), QXNum):
                 amp = QXBin('*',
                             amp,
@@ -142,10 +138,31 @@ class ExprTransformer:
                         )
                     )
                  )
-            amp = QXBin(
-                    '*',
-                    amp,
-                    QXCall('ω', [QXBin('*', QXBind(new_sums[reg_idx].ID()), old_kets[-1]), QXNum(2)])) #new_var*old_ket
+            if op_type == OpType.HADAMARD:
+                amp = QXBin(
+                        '*',
+                        amp,
+                        QXCall('ω', [QXBin('*', QXBind(new_sums[reg_idx].ID()), old_kets[reg_idx]), QXNum(2)])) #new_var*old_ket
+            elif op_type == OpType.QFT:
+                amp = QXBin(
+                        '*',
+                        amp,
+                        QXCall('ω', 
+                               [QXBin('*', QXBind(new_sums[reg_idx].ID()), old_kets[reg_idx]), 
+                                QXBin('^', 
+                                      QXNum(2), 
+                                      QXBind(new_sums[reg_idx].range().right().right()))]))
+            elif op_type == OpType.RQFT:
+                print(f"\namp: \n{new_sums[reg_idx].ID()}")
+                amp = QXBin(
+                        '*',
+                        amp,
+                        QXCall('ω', 
+                               [QXBin('*', QXNum(-1),
+                                QXBin('*', QXBind(new_sums[reg_idx].ID()), old_kets[reg_idx])), 
+                                QXBin('^', 
+                                      QXNum(2), 
+                                      QXBind(new_sums[reg_idx].range().right().right()))]))
             return amp
                 
         
@@ -167,7 +184,6 @@ class ExprTransformer:
                     # |-⟩ -> |1⟩
                     return QXNum(1)
         return state.amp()
-
 
     def _trans_lambda_amp(self, state: QXSum, **kwargs):
         """Transform amplitude for lambda operation"""

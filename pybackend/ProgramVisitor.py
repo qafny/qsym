@@ -176,7 +176,7 @@ class ProgramVisitor(AbstractProgramVisitor):
     def visitCall(self, ctx: Programmer.QXCall):
         for elem in ctx.exps():
             elem.accept(self)
-        print(ctx.ID(), 'CHECKPOINT')
+#        print(ctx.ID(), 'CHECKPOINT')
         return ctx.ID()
 
     def visitSingleT(self, ctx:Programmer.TySingle):
@@ -206,11 +206,14 @@ class ProgramVisitor(AbstractProgramVisitor):
         return ctx.flag().accept(self)
 
     def visitQSpec(self, ctx: Programmer.QXQSpec):
-        print('Vistor visitQSpec', ctx.qty())
         ctx.qty().accept(self)
         for elem in ctx.locus():
             elem.accept(self)
-        return ctx.state().accept(self)
+        if isinstance(ctx.state(), list):
+            for state in ctx.state():
+                state.accept(self)
+        else: ctx.state().accept(self)
+    #    return ctx.state().accept(self) 
 
     def visitAA(self, ctx: Programmer.TyAA):
         return "aa"
@@ -224,12 +227,18 @@ class ProgramVisitor(AbstractProgramVisitor):
 
     def visitVKet(self, ctx: Programmer.QXVKet):
         return ctx.vector().accept(self)
+    
+
+    def visitSums(self, ctx: Programmer.QXSums):
+        for elem in ctx.qxsums():
+            elem.accept(self)
 
 
     def visitSum(self, ctx: Programmer.QXSum):
         for elem in ctx.kets():
             elem.accept(self)
-        ctx.amp().accept(self)
+        for elem in ctx.amps():
+            elem.accept(self)
         for elem in ctx.sums():
             elem.accept(self)
 

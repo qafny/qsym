@@ -528,6 +528,13 @@ class QXQRange(QXTop):
 
     def crange(self):
         return self._crange
+    
+    def __eq__(self, other):
+        if not isinstance(other, QXQRange):
+            return False
+        return (self._id == other._id and
+                self._crange.left().__repr__() == other._crange.left().__repr__() and
+                self._crange.right().__repr__() == other._crange.right().__repr__())
 
     def __repr__(self):
         return f"QXQRange(id={repr(str(self._id))}, crange={self._crange})"
@@ -537,6 +544,11 @@ class QXQState(QXTop):
 
     def accept(self, visitor : AbstractProgramVisitor):
         pass
+
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return False
+        return self.__dict__ == other.__dict__
 
 
 class QXCon(QXTop):
@@ -585,11 +597,12 @@ class QXTensor(QXQState):
         return f"QXTensor(kets={self._kets}, id={repr(str(self._id))}, crange={self._crange}, amp={self._amp})"
 
 
+
 class QXSum(QXQState):
 
-    def __init__(self, sums : list[QXCon], amp: QXAExp, kets: list[QXKet]):
+    def __init__(self, sums : list[QXCon], amps: list[QXAExp], kets: list[QXKet]):
         self._sums = sums
-        self._amp = amp
+        self._amps = amps
         self._kets = kets
 
     def accept(self, visitor : AbstractProgramVisitor):
@@ -598,19 +611,36 @@ class QXSum(QXQState):
     def sums(self):
         return self._sums
 
-    def amp(self):
-        return self._amp
+    def amps(self):
+        return self._amps
 
     def kets(self):
         return self._kets
 
     def __repr__(self):
-        return f"QXSum(sums={self._sums}, amp={self._amp}, kets={self._kets})"
+        return f"QXSum(sums={self._sums}, amps={self._amps}, kets={self._kets})"
+
+class QXSums(QXQState):
+    
+    def __init__(self, qxsums: list[QXSum]):
+        self._qxsums = qxsums
+    
+    def accept(self, visitor):
+        return visitor.visitSums(self)
+    
+    def num(self):
+        return self._num
+    
+    def qxsums(self):
+        return self._qxsums
+
+    def __repr__(self):
+        return f"QXSums(qxsums={self._qxsums})" 
 
 
 class QXPart(QXQState):
 
-    def __init__(self, num : QXAExp, fname: QXAExp, tamp: QXAExp, famp : QXAExp):
+    def __init__(self, num: QXAExp, fname: QXAExp, tamp: QXAExp, famp : QXAExp):
         self._num = num
         self._fname = fname
         self._tamp = tamp
@@ -637,7 +667,7 @@ class QXPart(QXQState):
 
 class QXQSpec(QXSpec):
 
-    def __init__(self, locus: list[QXQRange], qty: QXQTy, state: QXQState):
+    def __init__(self, locus: list[QXQRange], qty: QXQTy, state: list[QXQState]):
         self._locus = locus
         self._qty = qty
         self._state = state

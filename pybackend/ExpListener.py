@@ -206,6 +206,15 @@ class ExpListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by ExpParser#manyAmp.
+    def enterManyAmp(self, ctx:ExpParser.ManyAmpContext):
+        pass
+
+    # Exit a parse tree produced by ExpParser#manyAmp.
+    def exitManyAmp(self, ctx:ExpParser.ManyAmpContext):
+        pass
+
+
     # Enter a parse tree produced by ExpParser#maySum.
     def enterMaySum(self, ctx:ExpParser.MaySumContext):
         pass
@@ -536,6 +545,15 @@ class ExpListener(ParseTreeListener):
 
     # Exit a parse tree produced by ExpParser#addOp.
     def exitAddOp(self, ctx:ExpParser.AddOpContext):
+        pass
+
+
+    # Enter a parse tree produced by ExpParser#mulOp.
+    def enterMulOp(self, ctx:ExpParser.MulOpContext):
+        pass
+
+    # Exit a parse tree produced by ExpParser#mulOp.
+    def exitMulOp(self, ctx:ExpParser.MulOpContext):
         pass
 
 

@@ -30,11 +30,11 @@ class PrettyPrinter(ProgramVisitor):
         # Process requires/ensures
         for cond in ctx.conds():
             if isinstance(cond, QXRequires):
-                print('\nrequires', cond, '\n')
+    #            print('\nrequires', cond, '\n')
                 method += f"  requires {cond.accept(self)}\n"
             elif isinstance(cond, QXEnsures):
                 method += f"  ensures {cond.accept(self)}\n"
-                print('\nensures', cond, '\n')
+    #            print('\nensures', cond, '\n')
         
         # Handle axiom case
         if ctx.axiom():
@@ -60,15 +60,21 @@ class PrettyPrinter(ProgramVisitor):
     def visitQSpec(self, ctx: QXQSpec):
         qty = ctx.qty().accept(self) if ctx.qty() else ""
         loci = [locus.accept(self) for locus in ctx.locus()]
-        state = ctx.state().accept(self)
+        if isinstance(ctx.state(), list):
+            state = ' '.join(st.accept(self) for st in ctx.state())
+        else:
+            state = ctx.state().accept(self)
         return f"{', '.join(loci)} : {qty} ↦ {state}"
     
     def visitCall(self, ctx: QXCall):
         func_name = ctx.ID()
-        args = [arg.accept(self) for arg in ctx.exps()]
-        if  ctx.ID() == 'ω':
+        if ctx.exps():
+            args = [arg.accept(self) for arg in ctx.exps()]
+        else:
+            args = []
+        if  ctx.ID() == 'omega' and ctx.exps():
             return f" ω({', '.join(args)})"
-        return f"({', '.join(args)})"
+        return f"{', '.join(args)}"
     
     def visitBind(self, ctx: QXBind):
         type_str = ""
@@ -76,7 +82,7 @@ class PrettyPrinter(ProgramVisitor):
             type_str = ctx.type().accept(self)
             return f"{ctx.ID()}: {type_str}"
     #    print(f"Binding without type: {ctx.ID()}")
-        return ctx.ID()
+        return f"{ctx.ID()}"
     
     def visitQ(self, ctx: TyQ):
         return f"Q[{ctx.flag().accept(self)}]"
@@ -90,15 +96,27 @@ class PrettyPrinter(ProgramVisitor):
     def visitEn(self, ctx: TyEn):
         return f"en({ctx.flag().accept(self)})"
     
+    def visitSums(self, ctx: QXSums):
+        qxsums = []
+
+        for sum in ctx.qxsums():
+            sumspec = sum.accept(self) if hasattr(sum, 'accept') else ""
+            qxsums.append(sumspec)
+        return ' + '.join(qxsums)
+    
     def visitSum(self, ctx: QXSum):
         # Handle summation variables and ranges
         sums = []
-        for sum_elem in ctx.sums():
-            sums.append(f"∑ {sum_elem.accept(self)}")
-
-        # Handle amplitude
-        amp = ctx.amp().accept(self) if ctx.amp() else "1"
         
+        if ctx.sums():
+            for sum_elem in ctx.sums():
+        #    print(sum_elem)
+                sums.append(f"∑ {sum_elem.accept(self)}")
+                
+        # Handle amplitude
+        amps = []
+        for elem in ctx.amps():
+            amps.append(f"{elem.accept(self)}")   
         # Handle kets
         kets = []
         for ket in ctx.kets():
@@ -106,7 +124,7 @@ class PrettyPrinter(ProgramVisitor):
             kets.append(f"|{state}⟩")
 
         # Join summations and state with proper spacing
-        return f"{' '.join(sums)} {amp}{' '.join(kets)}"
+        return f"{''.join(sums)} {'*'.join(amps)}{' '.join(kets)}"
     
     def visitTensor(self, ctx: QXTensor):
         """Format tensor product of quantum states"""
@@ -142,9 +160,15 @@ class PrettyPrinter(ProgramVisitor):
         return f"{ctx.ID()} ∈ [{left}, {right}) . "
     
     def visitBin(self, ctx: QXBin):
-        left  = ctx.left().accept(self)
+        left  = ctx.left().accept(self)      
         right = ctx.right().accept(self)
         return f"({left}{ctx.op()}{right})"
+    
+    def visitBool(self, ctx:QXComp):
+    # Handle raw integers on either side
+        left = ctx.left().accept(self) if hasattr(ctx.left(), 'accept') else str(ctx.left())
+        right = ctx.right().accept(self) if hasattr(ctx.right(), 'accept') else str(ctx.right())
+        return f"({left}{ctx.op()} {right})"
     
     def visitUni(self, ctx: QXUni):
     #    print('uni', ctx)
@@ -152,4 +176,4 @@ class PrettyPrinter(ProgramVisitor):
     #    print(next,'next')
         if ctx.op() == 'abs':
             return f"{next}"
-        return f"({ctx.op()}{next})"
+        return f"{ctx.op()}{next}"

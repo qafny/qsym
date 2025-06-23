@@ -62,7 +62,7 @@ class ExprTransformer:
     def _trans_had_bin(self, vector: QXBin, param: str, reg_idx: int, **kwargs) -> QXBin:
         """Transform binary operation for Hadamard operation"""
         
-        print(f"\nvector: {vector}, param: {param}, reg_idx: {reg_idx}")
+     #   print(f"\nvector: {vector}, param: {param}, reg_idx: {reg_idx}")
 
     def _trans_qft_bind(self, vector, param: str, reg_idx: int, op_type: OpType, **kwargs) -> QXBind:
         """Transform binding for Hadamard operation"""
@@ -86,7 +86,7 @@ class ExprTransformer:
             else:
                 return QXNum(1)
         elif isinstance(vector, QXBind):
-            print(f"vector: {vector}, param: {param}, reg_idx: {reg_idx}")
+        #    print(f"vector: {vector}, param: {param}, reg_idx: {reg_idx}")
             if vector.ID() != param:  # Current ket variable
                 # if self.state_manager.path_conds:
                 #     return QXBin('*', QXBind(vector.ID()), QXBind(param))
@@ -113,7 +113,7 @@ class ExprTransformer:
      #       print(f"\nold_ket: {old_kets} \nnew_sums: {new_sums}, \n\nnew_ket: {new_kets}")
                
             if isinstance(new_sums[reg_idx].range().right(), QXBin):
-                print(f"sum_var: {new_sums[reg_idx]}")
+            #    print(f"sum_var: {new_sums[reg_idx]}")
                 amp = QXBin('*',
                             amp,
                         QXBin('/',
@@ -153,7 +153,7 @@ class ExprTransformer:
                                       QXNum(2), 
                                       QXBind(new_sums[reg_idx].range().right().right()))]))
             elif op_type == OpType.RQFT:
-                print(f"\namp: \n{new_sums[reg_idx].ID()}")
+            #(f"\namp: \n{new_sums[reg_idx].ID()}")
                 amp = QXBin(
                         '*',
                         amp,

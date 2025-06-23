@@ -2,7 +2,7 @@ import Programmer
 from ProgramVisitor import ProgramVisitor
 from CollectKind import *
 
-from TypeChecker import compareLocus
+from TypeChecker import *
 
 from antlr4.tree.Tree import TerminalNodeImpl
 
@@ -10,14 +10,13 @@ def compareComp(t1: QXComp, t2: QXComp):
     return t1.op() == t2.op() and compareAExp(t1.left(),t2.left()) and compareAExp(t1.right(),t2.right())
 
 
-def addElem(a:QXComp, l:list[QXComp]):
-    v = False
+def addElem(a: QXComp, l: list[QXComp]):
     for elem in l:
-        if compareComp(a,elem):
-            v = True
-    if v:
-        return l
-    return l.append(a)
+        if compareComp(a, elem):
+            return l  # already present
+    l.append(a)
+    return l
+
 
 def isARange(env: list[(list[QXQRange], QXQTy)], se:list[str]):
     tmp = []
@@ -32,22 +31,17 @@ def merge_two_dicts(x, y):
     z.update(y)    # modifies z with keys and values of y
     return z
 
-def findQAVars(v: QXAExp, vars:list[str]):
-
+def findQAVars(v: QXAExp, vars: list[str]):
     if isinstance(v, QXUni):
         return findQAVars(v.next(), vars)
-
     if isinstance(v, QXBin):
-        return (findQAVars(v.left(),vars) + findQAVars(v.right(),vars))
-
+        return findQAVars(v.left(), vars) + findQAVars(v.right(), vars)
     if isinstance(v, QXNum):
         return []
-
     if isinstance(v, QXBind):
-        if v.ID() in vars:
-            return [v.ID()]
-        else:
-            return []
+        return [v.ID()] if v.ID() in vars else []
+    return []
+
 
 def findQVars(v: QXBool, vars: list[str]):
 
@@ -63,25 +57,6 @@ def findQVars(v: QXBool, vars: list[str]):
 def subStrs(a: list[str], b:list[str]):
     for elem in a:
         if not elem in b:
-            return False
-    return True
-
-def matchTy2St(ty: QXQTy, st: QXQState):
-    """Check if a type matches a state."""
-
-    if isinstance(ty, TyEn):
-        if ty.qty().num() != len(st.sums()):
-            return False
-    elif isinstance(ty, TyNor):
-        if not isinstance(st, QXTensor):
-            return False
-        if not isinstance(st.kets(), QXNum):
-            return False
-
-    elif isinstance(ty, TyHad):
-        if not isinstance(st, QXTensor):
-            return False
-        if not isinstance(st.kets(), QXHad):
             return False
     return True
 
@@ -127,8 +102,8 @@ class TypeCollector(ProgramVisitor):
                         if ran.ID() in tmp:
                             tmp.remove(ran.ID())
                         else:
-                            return None
-                if isinstance(elem.spec(), QXBool):
+                            return []  
+                elif isinstance(elem.spec(), QXBool):
                     tmvars = findQVars(elem.spec(), vars)
                     if not subStrs(tmvars, tmp):
                         for tmpelem in tmvars:
@@ -160,8 +135,8 @@ class TypeCollector(ProgramVisitor):
                         if ran.ID() in tmp:
                             tmp.remove(ran.ID())
                         else:
-                            return None
-                if isinstance(elem.spec(), QXBool):
+                            return []  # instead of None
+                elif isinstance(elem.spec(), QXBool):
                     tmvars = findQVars(elem.spec(), vars)
                     if not subStrs(tmvars, tmp):
                         for tmpelem in tmvars:
@@ -236,6 +211,7 @@ class TypeCollector(ProgramVisitor):
             self.tenv.append((ctx.spec().locus(), ctx.spec().qty()))
 
         if isinstance(ctx.spec(), QXComp):
+            print('\nleft right', ctx.spec().left(), ctx.spec().right()) #QXSingle "nat"
             left = ctx.spec().left().ID()
             right = ctx.spec().right().ID()
 
@@ -333,3 +309,4 @@ class TypeCollector(ProgramVisitor):
             method_name = str(method_name)
 
         return self.env[method_name][1]
+    

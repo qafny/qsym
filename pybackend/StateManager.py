@@ -76,13 +76,15 @@ class StateManager:
     """Manages quantum state and execution history"""
     def __init__(self):
         self.q_env = QEnv()
+        self.postcond = QEnv()  # type: Optional[QXComp]
         self.path_conds: List[QXBExp] = []
         self.precond_q: Optional[QXQSpec] = None
         self.precond_c: Optional[QXComp] = None
-        self.postcond: Optional[QXQSpec] = None
+        self.postcond_q: Optional[QXQSpec] = None
+        self.postcond_c: Optional[QXComp] = None
         self.history: List[StateSnapshot] = []
         self.sum_var_idx = 0
-        self.sum_var_letters = 'ijklmn'
+        self.sum_var_letters = 'kji'
         self.curr_state: Optional[str] = None
 
     def to_string(self, mode: str = "all") -> str:
@@ -119,8 +121,33 @@ class StateManager:
         """Take a snapshot of the initial state after all preconditions are set."""
         self._snapshot("init")
 
-    def set_postcond(self, spec: QXQSpec):
-        self.postcond = spec
+    def set_postcond_c(self, spec: QXComp):
+        """Set the postcondition for classical specifications."""
+        self.postcond_c = spec
+        binds = self._extract_binds(spec)
+        for bind in binds:
+            if bind.ID() not in self.q_env.c_env:
+                self.postcond.extend_c(bind.ID(), bind.type())
+    def set_postcond_q(self, spec: QXQSpec):
+        """Set the postcondition for quantum specifications."""
+        self.postcond_q = spec
+        self.postcond.extend(spec.locus(), spec.qty(), spec.state())
+    
+    def get_postcond(self) -> Optional[QXQSpec]:
+
+        """Return all current quantum and classical bindings as a dict."""
+        return self.postcond
+    
+    def get_postcond_nodes(self) -> Tuple[Optional[QXQSpec], Optional[QXComp]]:
+        """Return all current quantum and classical bindings as a dict."""
+        curr = {}
+        if self.postcond.q_env:
+            curr['quantum'] = self.postcond.q_env.copy()
+        if self.postcond.c_env:
+            curr['classical'] = self.postcond.c_env.copy()
+        if not curr:
+            raise AssertionError("No current state available.")
+        return curr
 
     def add_path_cond(self, cond: QXBExp):
         self.path_conds.append(cond)
@@ -171,6 +198,7 @@ class StateManager:
             for var, (loci, type_info, state) in snap.q_env.items():
                 loci_str = " ".join(loc.accept(printer) for loc in loci)
                 type_str = type_info.accept(printer)
+                print(state)
                 state_str = state.accept(printer)
                 lines.append(f"Env ⊢ {var} : {loci_str} : {type_str} ↦ {state_str}")
         return "\n".join(lines)

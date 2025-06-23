@@ -18,7 +18,7 @@ class QOperator:
         for reg in regs:
             found = False
             for loci, type_info, state in q_vars.values():
-                print(f"loci: {loci}, type_info: {type_info}, state: {state}, \nreg: {reg}")
+            #    print(f"loci: {loci}, type_info: {type_info}, state: {state}, \nreg: {reg}")
                 if any(loc.ID() == reg for loc in loci):
                     found = True
                     if self.state_manager.path_conds:
@@ -190,10 +190,10 @@ class QOperator:
 
     def apply_cast(self, regs: List[str], ty: QXQTy):
         """Handle quantum cast"""
-        print(f"Visiting cast: {ty}, loci: {regs}")
+    #    print(f"Visiting cast: {ty}, loci: {regs}")
         curr = self.state_manager.get_curr_bind()
         q_vars = curr.get('quantum', {})
-        print(f"q_vars: {q_vars}")
+    #    print(f"q_vars: {q_vars}")
         for reg in regs:
             found = False
             for loci, type_info, state in q_vars.values():
@@ -234,7 +234,7 @@ class QOperator:
 
         new_type = TyEn(flag=QXNum(num=len(new_sums)))
         new_state = QXSum(sums=new_sums, amp=new_amp, kets=new_kets)
-        print(f"\nnew_state: {new_state}")
+    #    print(f"\nnew_state: {new_state}")
         self.state_manager.update_state(loci, new_type, new_state, 'cast_had2en')
 
     def _apply_qft2en(self, loci: list[QXQRange], type_info, state: QXSum, regs, op_type: OpType):
@@ -244,7 +244,7 @@ class QOperator:
         else: 
             new_sums = []
         new_kets = state.kets().copy()
-        print(f"regs: {regs}")          
+    #    print(f"regs: {regs}")          
    
         for reg in regs:
             reg_idx = next(j for j, loc in enumerate(loci) if loc.ID() == reg)
@@ -263,7 +263,7 @@ class QOperator:
             new_kets[reg_idx] = QXSKet(new_vector)
         new_flag_num = len(new_sums)
         new_type = TyEn(flag=QXNum(num=new_flag_num))
-        print(f"\nQOperators: state{state}\n, {op_type}, \n new_sums:{new_sums}, \n new_ket: {new_kets}, \n {reg_idx}")
+     #   print(f"\nQOperators: state{state}\n, {op_type}, \n new_sums:{new_sums}, \n new_ket: {new_kets}, \n {reg_idx}")
         new_amp = self.transformer.trans_amp(state, op_type, new_sums=new_sums, new_kets=new_kets, reg_idx=reg_idx)
         
         # Update the amplitude for the new state
@@ -302,7 +302,7 @@ class QOperator:
         for reg in regs:
             reg_idx = next(j for j, loc in enumerate(loci) if loc.ID() == reg)
             curr_ket = state.kets()[reg_idx].vector()
-            print(f"org_ket: {curr_ket}, reg_idx: {reg_idx}, loci: {loci}")
+     #       print(f"org_ket: {curr_ket}, reg_idx: {reg_idx}, loci: {loci}")
             new_vector = self.transformer.trans_vec(
                 curr_ket,
                 None,
@@ -311,7 +311,7 @@ class QOperator:
             )
     #        print(f"new_vector: {new_vector}")
             new_kets[reg_idx] = QXSKet(new_vector)
-            print(f"new_kets: {new_kets}")
+        #    print(f"new_kets: {new_kets}")
             new_state = QXTensor(new_kets)
             new_type = TyHad()
         self.state_manager.update_state(loci, new_type, new_state, 'H')
@@ -322,8 +322,8 @@ class QOperator:
         new_sums = []
         sum_vars = []
         new_amp = state.amp()
-        print(f"amp: {new_amp}")
-        print(f"regs: {regs}, \n\nloci: {loci}, \n\nstate: {state}")
+    #    print(f"amp: {new_amp}")
+    #    print(f"regs: {regs}, \n\nloci: {loci}, \n\nstate: {state}")
 
 
         # Introduce a sum variable for each register
@@ -369,7 +369,7 @@ class QOperator:
                     )
                 
             new_sums.insert(i, new_sum)
-            print(new_sums)
+        #    print(new_sums)
             # Replace the ket with a bound variable
             # if i < len(regs):
             #     ew_kets.insert(i, QXSKet(QXBin(sum_var)))

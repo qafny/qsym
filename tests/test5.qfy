@@ -1,8 +1,7 @@
 //Simple Had application
 method lambdatest(n:nat, q : Q[n], k : nat)
   requires { q[0, n) : nor ↦ | k ⟩ }
-  ensures  { q[0, n) : nor ↦ | (k + 1) % 2^n ⟩ }
+  ensures  { q[0, n) : nor ↦ | k + 1 ⟩ }
 {
-  // induce superposition on the first qubit
   q[0, n) *= λ (x => |x + 1⟩);
 }

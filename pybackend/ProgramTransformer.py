@@ -252,7 +252,7 @@ class ProgramTransformer(ExpVisitor):
             else:
                 return QXTensor(self.visitManyket(ctx.manyket()))
         if ctx.sumspec() is not None:
-            return self.visitSumspec(ctx.sumspec())
+            return self.visitMsumspec(ctx.sumspec())
 
     # Visit a parse tree produced by ExpParser#tensorall.
     def visitTensorall(self, ctx:ExpParser.TensorallContext):
@@ -263,11 +263,17 @@ class ProgramTransformer(ExpVisitor):
 
 
     # Visit a parse tree produced by ExpParser#sumspec.
-    def visitSumspec(self, ctx:ExpParser.SumspecContext):
-        sums = self.visitMaySum(ctx.maySum())
-        amp = self.visitArithExpr(ctx.arithExpr())
-        kets = self.visitManyket(ctx.manyket())
-        return QXSum(sums, amp, kets)
+    def visitMsumspec(self, ctx:ExpParser.SumspecContext):
+        tmp = []
+        i = 0
+        while ctx.maySum(i) is not None:
+            sums = self.visitMaySum(ctx.maySum(i))
+            amp = self.visitManyAmp(ctx.manyAmp(i))            
+            kets = self.visitManyket(ctx.manyket(i))
+            tmp.append(QXSum(sums, amp, kets))
+            i += 1
+        return QXSums(tmp)
+    
 
     def visitPartspec(self, ctx:ExpParser.PartspecContext):
         num = ctx.arithExpr(0).accept(self)
@@ -275,6 +281,23 @@ class ProgramTransformer(ExpVisitor):
         true = ctx.arithExpr(2).accept(self)
         false = ctx.arithExpr(3).accept(self)
         return QXPart(num, fname, true, false)
+    
+    def visitManyAmp(self, ctx:ExpParser.ManyAmpContext):
+        tmp = []
+        i = 0
+        j = 0
+        while ctx.arithExpr(i) is not None:
+            tmp.append(ctx.arithExpr(i).accept(self))
+            i += 1
+        while ctx.chainBExp(j) is not None:
+            tmp.append(ctx.chainBExp(j).accept(self))
+            j += 1
+
+        print(tmp, len(tmp))
+
+        return tmp
+            
+        
 
 
     # Visit a parse tree produced by ExpParser#maySum.
@@ -604,4 +627,7 @@ class ProgramTransformer(ExpVisitor):
     def visitOp(self, ctx:ExpParser.OpContext):
         if ctx.addOp() is not None:
             return self.visitAddOp(ctx.addOp())
+        return ctx.getText()
+    
+    def visitMulOp(self, ctx: ExpParser.MulOpContext):
         return ctx.getText()

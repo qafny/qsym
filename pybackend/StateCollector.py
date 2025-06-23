@@ -108,8 +108,8 @@ class StateCollector(ProgramVisitor):
                         if ran.ID() in tmp:
                             tmp.remove(ran.ID())
                         else:
-                            return None
-                if isinstance(elem.spec(), QXBool):
+                            return []  # instead of None
+                elif isinstance(elem.spec(), QXBool):
                     tmvars = findQVars(elem.spec(), vars)
                     if not subStrs(tmvars, tmp):
                         for tmpelem in tmvars:
@@ -154,12 +154,13 @@ class StateCollector(ProgramVisitor):
                         if ran.ID() in tmp:
                             tmp.remove(ran.ID())
                         else:
-                            return None
-                if isinstance(elem.spec(), QXBool):
+                            return []  # instead of None
+                elif isinstance(elem.spec(), QXBool):
                     tmvars = findQVars(elem.spec(), vars)
                     if not subStrs(tmvars, tmp):
                         for tmpelem in tmvars:
                             tmp.remove(tmpelem)
+
 
         result = []
 

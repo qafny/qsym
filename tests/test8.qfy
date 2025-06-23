@@ -1,12 +1,32 @@
 //Simple Had application
 method conditionaltest1(n:nat, q : Q[n], p : Q[n], i:nat, base: nat, N:nat)
-  requires 0 <= i < n
+ // requires 0 <= i < n
   requires { q[0, i), p[0, n) : en ↦ ∑ k ∈ [0, 2^i) . 1/sqrt(2^i) | k ⟩ | (base ^ k) % N ⟩ }
   requires { q [i , n) : had ↦ |+⟩ }
   ensures  { q [i+1 , n) : had ↦ |+⟩ }
   ensures { q[0, i+1), p[0, n) : en ↦ ∑ k ∈ [0, 2^(i+1)) . 1/sqrt(2^(i+1)) | k ⟩ | (base ^ k) % N ⟩ }
+//   (case q[i]==0) + (case q[i]==1)  ===> 
 {
-  // induce superposition on the first qubit
   if (q[i]) { p[0, n) *= λ (x => |base ^ (2 ^ i) * x % N⟩); }
-  //(en)q[0,n); //it is best if we do not need this
 }
+
+//after if.bexp q[i, i+1)
+//floc: q[i, i+1) : had 
+//nenv: q[i+1, n): had, q[0, i), p[0, n) : en 
+
+//renv: q[0, i), p[0, n) : en, q [i , n) : had
+
+//after if.stmt, q[i, i+1), p[0, n)
+//floc: q[i, i+1), q[0, i), p[0, n): en || q[0, i+1), p[0, n): en, handle by subLocusGen?
+//nenv:  q[i+1, n): had
+//st? 1/sqrt(2)(| 0 ⟩ ∑ k ∈ [0, 2^i) . 1/sqrt(2^i) | k ⟩ | (base ^ k) % N ⟩ + | 1 ⟩ ∑ k ∈ [0, 2^i) . 1/sqrt(2^i) | k ⟩ | (base ^ k) % N ⟩)
+//===>merge
+//renv = [floc, ty, st, num] + nenv -> should somehow merge q[0, i+1), p[0, n): en, q[i+1, n): had
+
+//go into QA, p[0, n)
+//findPos
+//floc: q[0, i+1), p[0, n): en 1/sqrt(2)(| 0 ⟩ ∑ k ∈ [0, 2^i) . 1/sqrt(2^i) | k ⟩ | (base ^ k) % N ⟩ + | 1 ⟩ ∑ k ∈ [0, 2^i) . 1/sqrt(2^i) | k ⟩ | (base ^ k) % N ⟩)
+//nenv: en, q[i+1, n): had
+//lambda on q[0, i+1), p[0, n): en 1/sqrt(2)(| 0 ⟩ ∑ k ∈ [0, 2^i) . 1/sqrt(2^i) | k ⟩ | (base ^ k) % N ⟩ + | 1 ⟩ ∑ k ∈ [0, 2^i) . 1/sqrt(2^i) | k ⟩ | (base ^ k) % N * (base ^ (2^i)) % N ⟩) 
+// renv = [floc, ty, st, num] + nenv 
+

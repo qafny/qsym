@@ -620,6 +620,7 @@ class ShorVisitor(SubstAExp):
     
 class HasLoopVarVisitor(SubstAExp):
     def __init__(self, target_id: str):
+        super().__init__("DUMMY_VAR_FOR_CHECKER", None)     
         self.target_id = target_id
         self.found = False
 

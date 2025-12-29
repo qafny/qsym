@@ -37,7 +37,7 @@ def compareRangeLocus(q1: QXQRange, qs: list[QXQRange]):
             return (vs + (qs[i+1:len(qs)]))
         vs = vs + [qs[i]]
     return None
-#vs = q2/q1
+#vs = q2/q1 
 def compareLocus(q1: list[QXQRange], q2: list[QXQRange]):
     vs = q2
     for elem in q1:
@@ -164,14 +164,17 @@ def subLocusGen(q: list[QXQRange], qs: list[(list[QXQRange], QXQTy, QXQSpec, int
                     type = compareType(qty, type)
                     state = st
                     if qv:
-                        rev += [(qv, qty, st, -1)] 
+                        rev += [(qv, qty, st, num)] 
                     rev += (qs[i+1:len(qs)])
                     return (floc, type, state, rev, num)
                 else:
                     floc += [qxv]
                     type = compareType(qty, type)
                     state = st
-                    rev += qv #probably need to fix here as well
+                    if qv:
+                        rev += [(qv, qty, st, num)] 
+                    rev += (qs[i+1:len(qs)])
+       #             rev += qv #probably need to fix here as well
             else:
                 rev += [qs[i]]
 
@@ -904,16 +907,15 @@ class StateChecker(ProgramVisitor):
     #        print(f"\n locusRenv and renv after conds: {findLocus.renv} \n{self.renv}") 
             floc, ty, st, nenv, num = subLocusGen(findLocus.renv, self.renv)
     #        print(f"\n locusRenv, nenv, renv after conds: {findLocus.renv} \n{nenv} \n{self.renv} {envPrint(self.renv)}")         
-            print(f"\n IF: findLocus.renv: {findLocus.renv} \nloc: {floc}\n ty: {ty} \n st: {st}\n nenv: {nenv}\n num: {num} \n renv: {self.renv} ")
+    #        print(f"\n IF: findLocus.renv: {findLocus.renv} \nloc: {floc}\n ty: {ty} \n st: {st}\n nenv: {nenv}\n num: {num} \n renv: {self.renv} ")
             if isinstance(cond, QXComp):
                 condidx = findPos(floc, findLocus.renv)
                 self.conds = True, condidx
                 st = mergeStates(floc, self.renv, self.conds, cond)
                 self.renv = [(floc, ty, st, num)] + nenv
                 findLocus.renv = [findLocus.renv[-1]]
-                print(f"\n{findLocus.renv}")
-                print(f"\n IF cond bool: loc: {floc}\n ty: {ty} \n st: {st}\n nenv: {nenv}\n num: {num} \n renv: {self.renv} {envPrint(self.renv)}")
- #           castEn(floc, ctrl=bool)
+    #            print(f"\n{findLocus.renv}")
+    #            print(f"\n IF cond bool: loc: {floc}\n ty: {ty} \n st: {st}\n nenv: {nenv}\n num: {num} \n renv: {self.renv} {envPrint(self.renv)}")
             else: 
                 self.renv = [(floc, ty, st, num)] + nenv
             if isinstance(ty, TyNor):
@@ -923,18 +925,18 @@ class StateChecker(ProgramVisitor):
 
             for elem in ctx.stmts():
                 cond = findLocus.visit(elem)
-            print(f"\n locusRenv and renv: {findLocus.renv} \n{self.renv} {envPrint(self.renv)}")
+    #        print(f"\n locusRenv and renv: {findLocus.renv} \n{self.renv} {envPrint(self.renv)}")
             floc, ty, st, nenv, num = subLocusGen(findLocus.renv, self.renv)
-            print(f"\n IF: before QAssign merger: {floc}\n ty: {ty} \n st: {st}\n nenv: {nenv}\n num: {num} \n renv: {self.renv})")
+    #        print(f"\n IF: before QAssign merger: {floc}\n ty: {ty} \n st: {st}\n nenv: {nenv}\n num: {num} \n renv: {self.renv})")
             
             condidx = findPos(floc, findLocus.renv)
-            print(f"\n condidx: {condidx}")
+    #        print(f"\n condidx: {condidx}")
             self.conds = True, condidx
             
             st = mergeStates(floc, self.renv, self.conds)
-            print(f"\n Again IF: loc: {floc}\n ty: {ty} \n st: {st}\n nenv: {nenv}\n num: {num} \nrenv: {self.renv} ")
+    #        print(f"\n Again IF: loc: {floc}\n ty: {ty} \n st: {st}\n nenv: {nenv}\n num: {num} \nrenv: {self.renv} ")
             self.renv = [(floc, ty, st, num)] + nenv
-            print(f"{envPrint(self.renv)}")
+    #        print(f"{envPrint(self.renv)}")
             for elem in ctx.stmts():
                 elem.accept(self)
             self.conds = False, None

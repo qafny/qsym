@@ -4,30 +4,30 @@ from Programmer import *
 from TypeChecker import *
 from CollectKind import *
 
-def joinRange(q1:QXQRange, qs:list[QXQRange]):
+def joinRange(q1:QXQRange, qs:[QXQRange]):
     tmp = []
     for i in range(len(qs)):
-        elem = qs[i] 
-        if q1.ID() == elem.ID() and compareAExp(elem.crange().right(), q1.crange().left()): #q1=q[i, i+1), qs=q[0, i)... 
-                tmp += [QXQRange(q1.ID(), QXCRange(elem.crange().right(), q1.crange().left()))] + qs[i+1:len(qs)]
+        elem = qs[i]
+        if q1.location() == elem.location() and compareAExp(elem.crange().right(), q1.crange().left()):
+                tmp += [QXQRange(q1.location(), QXCRange(elem.crange().right(), q1.crange().left()))] + qs[i+1:len(qs)]
                 return tmp
         else:
             tmp += [elem]
     tmp += [q1]
     return tmp
 
-def joinLocus(q1:list[QXQRange], qs:list[QXQRange]):
+def joinLocus(q1:[QXQRange], qs:[QXQRange]):
     for elem in q1:
         qs=joinRange(elem,qs)
     return qs
 
-def getVars(q: list[QXQRange]):
+def getVars(q: [QXQRange]):
     tmp = []
     for elem in q:
-        tmp += [elem.ID()]
+        tmp += [elem.location()]
     return tmp
 
-def findLocus(q: list[str], qs:list[list[QXQRange]]):
+def findLocus(q: [str], qs:[[QXQRange]]):
     tmp = []
     for i in range(len(qs)):
         elem = qs[i]
@@ -98,10 +98,9 @@ class LocusCollector(ProgramVisitor):
 
     def visitQIndex(self, ctx: Programmer.QXQIndex):
         if isinstance(ctx.index(), QXNum):
-            #this makes sure the conds is first locus
-            self.renv=joinLocus([QXQRange(ctx.ID(), QXCRange(ctx.index(), QXNum(ctx.index().num() + 1)))], self.renv)
+            self.renv=joinLocus([QXQRange(location=ctx.ID(), crange=QXCRange(ctx.index(), QXNum(ctx.index().num() + 1)))], self.renv)
         else:
-            self.renv=joinLocus([QXQRange(ctx.ID(), QXCRange(ctx.index(), QXBin("+", ctx.index(), QXNum(1))))], self.renv)
+            self.renv=joinLocus([QXQRange(location=ctx.ID(), crange=QXCRange(ctx.index(), QXBin("+", ctx.index(), QXNum(1))))], self.renv)
         return True
 
     def visitQNot(self, ctx: Programmer.QXQNot):

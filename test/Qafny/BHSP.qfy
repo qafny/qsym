@@ -1,0 +1,23 @@
+// Boolean Hidden Shift problem, filling in the final predicates (ensures)
+// https://arxiv.org/abs/1103.3017
+
+method HSP (q : Q[n], p : Q[1], n: nat, f : nat -> bool, g: nat -> bool, s: nat) returns (b: nat, y: nat, prob: real)
+  requires { q[0, n) : nor ↦ |0⟩ }
+  requires { p[0] : nor ↦ |0⟩ }
+  requires forall x :: 0 <= x < 2^n ==> g(x) == f(x+s)
+  ensures prob == 1 - 1/q
+  ensures s == not(y)
+  ensures b == 0
+{
+  q[0, n) *= H;
+  
+  q[0, n), p[0] *= λ (x, y => |x⟩ |y + f(x)⟩);
+  
+  p[0] *= λ (y => ω(y, 2) |y⟩);
+  
+  assert { q[0, n), p[0] : en ↦ ∑ j ∈ [0, 2^n) . 1 / sqrt(2^n) * ω (f(x), 2) |j⟩ | f(x) + g(x)⟩ };
+  
+  q[0, n) *= H;
+
+  y, b, prob *= measure(q[0, n), p[0]);
+}

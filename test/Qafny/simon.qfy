@@ -13,8 +13,8 @@ method Simon(n: nat, q: Q[n], p: Q[n], f: nat -> nat, s: nat) returns (y: nat, p
   ensures n2b(s)*n2b(y) == 0 ==> prob == 1 / 2^(n - 1)
 {
   q[0, n) *= H; //a normal H gate, turn q[0,n) to had type array.
-  q[0, n), p[0, n) *= λ(x, y => |x⟩|f(x)⟩);
-  assert { q[0, n), p[0, n) : en ↦ ∑ y ∈ [0, 2^n) . 1 / sqrt(2^n) |y⟩ |f(k)⟩ };
+  q[0, n), p[0, n) *= λ(x, y => |x⟩|y ⊕ f(x)⟩);
+  assert { q[0, n), p[0, n) : en ↦ ∑ y ∈ [0, 2^n) . 1 / sqrt(2^n) |y⟩ |f(y)⟩ };
 //  q[0, n), p[0] *= λ(x, y => ω (f(x), 2)|x⟩|y⟩);
   
   //the loop verification is the same as Shor's algorithm. Each loop step, we include one qubit from q[i] to the group q[0,i),p[0,n)

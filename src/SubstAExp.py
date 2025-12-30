@@ -103,4 +103,5 @@ class SubstAExp(ProgramVisitor):
     
     def visitCall(self, ctx: Programmer.QXCall):
             new_exps = [e.accept(self) for e in ctx.exps()]
+            print(f"\n new_exps: {new_exps}, {self.id}, {self.exp}")
             return QXCall(ctx.ID(), new_exps, ctx.inverse(), ctx.line_number())

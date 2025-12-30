@@ -97,6 +97,27 @@ def _is_increment_expr(expr: Any) -> bool:
         return False
     return False
 
+def _simplify_identity_op(expr: Any) -> Any:
+    """Simplifies 0 ^ x, x ^ 0, 0 + x, x + 0 to x."""
+    if _cn(expr) != "QXBin":
+        return expr
+    
+    op = str(_call0(expr, "op"))
+    if op not in ("⊕", "+"):
+        return expr
+        
+    left = _call0(expr, "left")
+    right = _call0(expr, "right")
+    
+    # Helper to check for 0
+    def is_zero(t):
+        return _cn(t) == "QXNum" and int(_call0(t, "num", -1)) == 0
+        
+    if is_zero(left): return right
+    if is_zero(right): return left
+    
+    return expr
+
 # -------------------------
 # AST constructors (robust)
 # -------------------------
@@ -140,6 +161,10 @@ def _mk_sum(cons: List[Any], amp: Any, tensor: Any):
     from Programmer import QXSum
     return QXSum(sums=cons, amp=amp, tensor=tensor)
 
+def _mk_had(s: str):
+    from Programmer import QXHad
+    return QXHad(s)
+
 
 # -------------------------
 # Alpha-canonicalization for QXSum
@@ -182,6 +207,8 @@ def canon_sum(term: Any) -> Any:
         return term
 
     mapping = {old: new}
+
+    print(f"\n term: {term} \n mapping: {mapping}")
 
     cr = _call0(cons[0], "crange")
     cond = _call0(cons[0], "condtion", None)
@@ -262,7 +289,7 @@ def _rewrite_tensor_sum_with_ket0(term: Any) -> Optional[Any]:
 
     if _cn(left) != "QXSum": return None
     
-    if not _is_ket0(right) and (not _is_ket1(right)): return None
+    if not _is_ket0(right) and (not _is_ket1(right)) and (not _is_ket_minus(right)): return None
 
     left = canon_sum(left)
 
@@ -277,6 +304,7 @@ def _rewrite_tensor_sum_with_ket0(term: Any) -> Optional[Any]:
     if len(ks) != 1: return None
     if _is_ket0(right): joint = _mk_tensor([ks[0], _mk_sket(_mk_num(0))])
     elif _is_ket1(right): joint = _mk_tensor([ks[0], _mk_sket(_mk_num(1))])
+    elif _is_ket_minus(right): joint = _mk_tensor([ks[0], _mk_sket(_mk_had("-"))])
     return _mk_sum(cons, amp, joint)
 
 def _rewrite_apply_collapse_sum(op: Any, tgt: Tuple[Any, ...], inner: Any) -> Optional[Any]:
@@ -371,7 +399,8 @@ def _rewrite_apply_oracle_on_sum(op: Any, tgt: Tuple[Any, ...], inner: Any) -> O
              if len(bindings) >= 2:
                  y_var = str(_call0(bindings[1], "ID"))
                  mapping[y_var] = _mk_num(0)
-             f_x = _subst_bind(vec_expr, mapping)
+             raw_f_x = _subst_bind(vec_expr, mapping)
+             f_x = _simplify_identity_op(raw_f_x) # Simplify 0 ⊕ f(x) -> f(x)
              from Programmer import QXCall
              new_phase = QXCall(id='omega', exps=[f_x, _mk_num(1)], inverse=False)
         
@@ -402,7 +431,8 @@ def _rewrite_apply_oracle_on_sum(op: Any, tgt: Tuple[Any, ...], inner: Any) -> O
         new_ks = []
         for ok in oracle_kets:
             ov = _call0(ok, "vector")
-            nv = _subst_bind(ov, mapping)
+            nv_raw = _subst_bind(ov, mapping)
+            nv = _simplify_identity_op(nv_raw)
             new_ks.append(_mk_sket(nv))
         new_tensor = _mk_tensor(new_ks)
         return _mk_sum(cons, amp, new_tensor)

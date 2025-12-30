@@ -71,6 +71,8 @@ def leq_qty(q1: Any, q2: Any) -> bool:
     """
     if type(q1) is type(q2):
         return True
-    if (is_nor(q1) or is_had(q1)) and is_en(q2):
-        return True
+    if is_en(q2):
+            return True
+ #   if (is_nor(q1) or is_had(q1)) and is_en(q2):
+ #       return True
     return False

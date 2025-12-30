@@ -164,6 +164,9 @@ def entails_qspec(st: ExecState, ant_qstore: Dict[Any, Any], goal_spec: Any) -> 
         return False, f"Tier-0 expects 1 state term each (ant={len(ant_states)}, goal={len(goal_states)})"
 
     if repr(ant_states[0]) != repr(goal_states[0]):
+        print(f"DEBUG MISMATCH:")
+        print(f"LHS Repr: {repr(ant_states[0])}")
+        print(f"RHS Repr: {repr(goal_states[0])}")
         return False, norm_qstore, "mismatch"
 
     return True, norm_qstore, "matched"

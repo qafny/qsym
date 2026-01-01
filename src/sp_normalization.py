@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Any, List
 
 from sp_rewrite import rewrite_term  # single source of truth
+from sp_pretty import pp
 
 def _call_list(obj: Any, name: str, default=None) -> list:
     f = getattr(obj, name, None)
@@ -26,7 +27,7 @@ def normalize_qspec(spec: Any, st: Any) -> Any:
     states = _call_list(spec, "states")
 
     new_states = [rewrite_term(t, st) for t in states]
-    print(f"\n new_states {new_states}")
+    print(f"\n new_states {pp(new_states[0])}")
 
     from Programmer import QXQSpec
     return QXQSpec(locus=locus, qty=qty, states=new_states)

@@ -4,10 +4,16 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 from sp_terms import IApply, IIter, ILoopSummary, IStep, ICtrlGate, ITensorProd, IPostSelect
 from sp_pretty import pp
 from SubstAExp import SubstAExp
-from ProgramVisitor import ProgramVisitor
+from SimplifyVisitor import SimplifyVisitor
+
 # -------------------------
 # Tiny duck-typing helpers
 # -------------------------
+
+_simplifier = SimplifyVisitor() 
+
+def sim_expr(expr):
+    return expr.accept(_simplifier)
 
 def _cn(x: Any) -> str:
     return getattr(x, "__class__", type(x)).__name__
@@ -97,26 +103,15 @@ def _is_increment_expr(expr: Any) -> bool:
         return False
     return False
 
-def _simplify_identity_op(expr: Any) -> Any:
-    """Simplifies 0 ^ x, x ^ 0, 0 + x, x + 0 to x."""
-    if _cn(expr) != "QXBin":
-        return expr
-    
-    op = str(_call0(expr, "op"))
-    if op not in ("⊕", "+"):
-        return expr
-        
-    left = _call0(expr, "left")
-    right = _call0(expr, "right")
-    
-    # Helper to check for 0
-    def is_zero(t):
-        return _cn(t) == "QXNum" and int(_call0(t, "num", -1)) == 0
-        
-    if is_zero(left): return right
-    if is_zero(right): return left
-    
-    return expr
+def _get_flat_kets(obj: Any) -> List[Any]:
+    if _cn(obj) == "QXTensor":
+        return list(_call0(obj, "kets", []) or [])
+    if isinstance(obj, ITensorProd):
+        out = []
+        for f in obj.factors:
+            out.extend(_get_flat_kets(f))
+        return out
+    return [obj]
 
 # -------------------------
 # AST constructors (robust)
@@ -192,34 +187,115 @@ def _subst_bind(expr: Any, mapping: Dict[str, str]) -> Any:
             res = res.accept(visitor)
     return res
 
+def _collect_defined_vars(node: Any, acc: set):
+    """Recursively collect all QXCon IDs defined in nested Sums."""
+    if node is None: return
+    cn = _cn(node)
+    
+    if cn == "QXSum":
+        cons = list(_call0(node, "sums", []) or [])
+        for c in cons:
+            acc.add(str(_call0(c, "ID")))
+        _collect_defined_vars(_call0(node, "kets"), acc)
+        
+    elif cn == "QXTensor":
+        for k in list(_call0(node, "kets", []) or []):
+            _collect_defined_vars(k, acc)
+            
+    elif isinstance(node, ITensorProd):
+        for f in node.factors:
+            _collect_defined_vars(f, acc)
+
 def canon_sum(term: Any) -> Any:
-    if _cn(term) != "QXSum":
-        return term
+    if _cn(term) != "QXSum": return term
 
     cons = list(_call0(term, "sums", []) or [])
- 
-    if len(cons) != 1 or _cn(cons[0]) != "QXCon":
-        return term
+    if not cons: return term
+
+    kets_obj = _call0(term, "kets")
+    inner_sum = None
+    
+    if _cn(kets_obj) == "QXSum":
+        inner_sum = kets_obj
+    elif _cn(kets_obj) == "QXTensor":
+        ks = list(_call0(kets_obj, "kets", []) or [])
+        for i, k in enumerate(ks):
+            if _cn(k) == "QXSum":
+                inner_sum = k
+                break
+            
+    if inner_sum:
+        from Programmer import QXSum, QXBin
+        inner_cons = list(_call0(inner_sum, "sums", []) or [])
+        
+        # Collision handling: check if inner vars collide with outer
+        outer_ids = set(str(_call0(c, "ID")) for c in cons)
+        inner_mapping = {}
+        new_inner_cons = []
+        
+        for con in inner_cons:
+            old = str(_call0(con, "ID"))
+            new = old
+            if old in outer_ids:
+                new = old + "_inner"
+                inner_mapping[old] = new
+            
+            cr = _subst_bind(_call0(con, "crange"), inner_mapping)
+            cond = _subst_bind(_call0(con, "condtion"), inner_mapping)
+            new_inner_cons.append(_mk_con(new, cr, cond))
+            
+        if inner_mapping:
+            inner_amp = _subst_bind(_call0(inner_sum, "amp"), inner_mapping)
+            inner_kets_obj = _subst_bind(_call0(inner_sum, "kets"), inner_mapping)
+            inner_cond = _subst_bind(_call0(inner_sum, "condition"), inner_mapping)
+        else:
+            inner_amp = _call0(inner_sum, "amp")
+            inner_kets_obj = _call0(inner_sum, "kets")
+            inner_cond = _call0(inner_sum, "condition")
+        
+        outer_amp = _call0(term, "amp")
+        new_amp = QXBin(op='*', left=outer_amp, right=inner_amp)
+        cond = _call0(term, "condition") or inner_cond
+        
+        if _cn(kets_obj) == "QXTensor":
+            final_ks = []
+            ks = list(_call0(kets_obj, "kets", []) or [])
+            for k in ks:
+                if k is inner_sum:
+                    final_ks.extend(_get_flat_kets(inner_kets_obj))
+                else:
+                    final_ks.append(k)
+            new_kets = _mk_tensor(final_ks)
+        else:
+            new_kets = inner_kets_obj
+        
+        flattened = QXSum(sums=cons + new_inner_cons, amp=new_amp, tensor=new_kets)
+        return canon_sum(flattened)
 
     old = str(_call0(cons[0], "ID"))
-    new = "k#0"
-    if old == new:
-        return term
+    used_vars = set()
+    _collect_defined_vars(_call0(term, "kets"), used_vars)
+    idx = 0
+    new_cons = []
+    
+    mapping = {}
+    for i, con in enumerate(cons):
+        old = str(_call0(con, "ID"))
+        new = f"k#{idx}"
+        while new in used_vars or new in mapping.values():
+            idx += 1
+            new = f"k#{idx}"
+        mapping[old] = new
+        used_vars.add(new)
+        
+        cr = _subst_bind(_call0(con, "crange"), mapping)
+        cond = _subst_bind(_call0(con, "condtion"), mapping)
+        new_cons.append(_mk_con(new, cr, cond))
 
-    mapping = {old: new}
+    new_amp = _subst_bind(_call0(term, "amp"), mapping)
+    new_kets = _subst_bind(_call0(term, "kets"), mapping)
 
-    print(f"\n term: {term} \n mapping: {mapping}")
-
-    cr = _call0(cons[0], "crange")
-    cond = _call0(cons[0], "condtion", None)
-    con2 = _mk_con(new, cr, _subst_bind(cond, mapping) if cond is not None else None)
-
-    amp2 = _subst_bind(_call0(term, "amp"), mapping)
-    kets2 = _subst_bind(_call0(term, "kets"), mapping)
-
-    return _mk_sum([con2], amp2, kets2)
-
-
+    return _mk_sum(new_cons, new_amp, new_kets)
 # -------------------------
 # Local rewrite rules
 # -------------------------
@@ -269,43 +345,53 @@ def _rewrite_apply_expand_H0(op: Any, tgt: Tuple[Any, ...], inner: Any) -> Optio
     ket = _mk_tensor([_mk_sket(_mk_bind("k#0"))])
     return _mk_sum([con], amp, ket)
 
-def _rewrite_tensor_sum_with_ket0(term: Any) -> Optional[Any]:
+def _distribute_tensor_over_sum(term: Any) -> Optional[Any]:
     """
-    Rewrite ITensorProd(Sum, Ket) -> Sum(|k>|0>)
+    ITensorProd(A, Sum(kets), B) -> Sum(QXTensor(A, kets, B))
     """
-    if not isinstance(term, ITensorProd):
-        return None
-    print(f"\n term: {term}")
-    fs = term.factors
-    if len(fs) != 2:
-        return None
-    left, right = fs
+    if not isinstance(term, ITensorProd): return None
+    factors = list(term.factors)
     
-    # Try normalizing left side to Sum if it's IApply(H)
-    if _cn(left) == "IApply" and _is_H(left.op):
-        left_expanded = _rewrite_apply_expand_H0(left.op, left.target, left.term)
-        if left_expanded:
-            left = left_expanded
-
-    if _cn(left) != "QXSum": return None
+    # 1. Locate the Sum node
+    sum_idx = -1
+    for i, f in enumerate(factors):
+        if _cn(f) == "QXSum":
+            sum_idx = i
+            break
     
-    if not _is_ket0(right) and (not _is_ket1(right)) and (not _is_ket_minus(right)): return None
+    if sum_idx == -1: return None
+    
+    sum_node = factors[sum_idx]
+    
 
-    left = canon_sum(left)
+    def _flatten_to_kets(obj):
+        if _cn(obj) == "QXTensor":
+            return list(_call0(obj, "kets", []) or [])
+        if isinstance(obj, ITensorProd):
+            out = []
+            for f in obj.factors:
+                out.extend(_flatten_to_kets(f))
+            return out
+        return [obj]
 
-    cons = list(_call0(left, "sums", []) or [])
-    if len(cons) != 1 or _cn(cons[0]) != "QXCon":
-        return None
+    final_kets_list = []
+    
+    for i, f in enumerate(factors):
+        if i == sum_idx:
 
-    amp = _call0(left, "amp")
-    kets = _call0(left, "kets")
-    if _cn(kets) != "QXTensor": return None
-    ks = list(_call0(kets, "kets", []) or [])
-    if len(ks) != 1: return None
-    if _is_ket0(right): joint = _mk_tensor([ks[0], _mk_sket(_mk_num(0))])
-    elif _is_ket1(right): joint = _mk_tensor([ks[0], _mk_sket(_mk_num(1))])
-    elif _is_ket_minus(right): joint = _mk_tensor([ks[0], _mk_sket(_mk_had("-"))])
-    return _mk_sum(cons, amp, joint)
+            sum_body = _call0(sum_node, "kets")
+            final_kets_list.extend(_flatten_to_kets(sum_body))
+        else:
+            final_kets_list.extend(_flatten_to_kets(f))
+
+    new_kets_obj = _mk_tensor(final_kets_list)
+
+    from Programmer import QXSum
+    return QXSum(
+        sums=_call0(sum_node, "sums"),
+        amp=_call0(sum_node, "amp"),
+        tensor=new_kets_obj, 
+    )
 
 def _rewrite_apply_collapse_sum(op: Any, tgt: Tuple[Any, ...], inner: Any) -> Optional[Any]:
     """
@@ -400,7 +486,7 @@ def _rewrite_apply_oracle_on_sum(op: Any, tgt: Tuple[Any, ...], inner: Any) -> O
                  y_var = str(_call0(bindings[1], "ID"))
                  mapping[y_var] = _mk_num(0)
              raw_f_x = _subst_bind(vec_expr, mapping)
-             f_x = _simplify_identity_op(raw_f_x) # Simplify 0 ⊕ f(x) -> f(x)
+             f_x = sim_expr(raw_f_x)
              from Programmer import QXCall
              new_phase = QXCall(id='omega', exps=[f_x, _mk_num(1)], inverse=False)
         
@@ -432,7 +518,7 @@ def _rewrite_apply_oracle_on_sum(op: Any, tgt: Tuple[Any, ...], inner: Any) -> O
         for ok in oracle_kets:
             ov = _call0(ok, "vector")
             nv_raw = _subst_bind(ov, mapping)
-            nv = _simplify_identity_op(nv_raw)
+            nv = sim_expr(nv_raw)
             new_ks.append(_mk_sket(nv))
         new_tensor = _mk_tensor(new_ks)
         return _mk_sum(cons, amp, new_tensor)
@@ -465,7 +551,7 @@ def _rewrite_oracle_iter(term: Any) -> Optional[Any]:
     inner = term.term
 
     if isinstance(inner, ITensorProd):
-        normalized_inner = _rewrite_tensor_sum_with_ket0(inner)
+        normalized_inner = _distribute_tensor_over_sum(inner)
         print(f"\n norm_inner: \n {normalized_inner}")
         if normalized_inner:
             inner = normalized_inner
@@ -475,8 +561,6 @@ def _rewrite_oracle_iter(term: Any) -> Optional[Any]:
 
     inner = canon_sum(inner)
     cons = list(_call0(inner, "sums", []) or [])
-    if len(cons) != 1 or _cn(cons[0]) != "QXCon":
-        return None
 
     k_id = str(_call0(cons[0], "ID"))
     if not k_id:
@@ -485,16 +569,15 @@ def _rewrite_oracle_iter(term: Any) -> Optional[Any]:
     kets = _call0(inner, "kets")
     if _cn(kets) != "QXTensor":
         return None
+ 
     #the kets
     ks = list(_call0(kets, "kets", []) or [])
-    if len(ks) != 2:
-        return None
         
     if _cn(ks[0]) != "QXSKet": return None
     vec0 = _call0(ks[0], "vector")
     if _cn(vec0) != "QXBind" or str(_call0(vec0, "ID")) != k_id: return None
     
-    if _cn(ks[1]) != "QXSKet" or _cn(_call0(ks[1], "vector")) != "QXNum":
+    if _cn(ks[-1]) != "QXSKet":
         return None
 
     oracle_op = gate.op
@@ -535,20 +618,17 @@ def _rewrite_oracle_iter(term: Any) -> Optional[Any]:
             if oracle_bindings:
                 #using the first binding here, could be multiple tho
                 bound_var = str(_call0(oracle_bindings[0], "ID"))
-                print(f"\n ks, {ks[0]} {ks[1]}")
-                x0 = _call0(ks[1], "vector") 
-                x0_str = _call0(x0, "num")
+                print(f"\n ks, {ks[0]} {ks[-1]}")
+                x0 = _call0(ks[-1], "vector") 
                 print(f"\n x0", {x0})
-                mapping[bound_var] = x0_str
+                mapping[bound_var] = x0
             new_vec = _subst_bind(vec_with_k, mapping)
-
             new_vec = new_vec.accept(shor_vis)
 
-    ket_k = _mk_sket(_call0(ks[0], "vector"))
-    
-    # New ket is |Oracle(k)> 
-    ket_oracle = _mk_sket(new_vec)  
-    new_tensor = _mk_tensor([ket_k, ket_oracle])
+    new_kets_list = list(ks)
+    new_kets_list[-1] = _mk_sket(sim_expr(new_vec))
+    new_tensor = _mk_tensor(new_kets_list)
+
     return _mk_sum(cons, _call0(inner, "amp"), new_tensor)
 
 
@@ -557,7 +637,7 @@ def _rewrite_oracle_iter(term: Any) -> Optional[Any]:
 # -------------------------
 
 def rewrite_term(term: Any, st: Any) -> Any:
- #   print(f"\n term: \n {term}")
+    print(f"\n term: \n {term}")
     def rec(x: Any) -> Any:
         if isinstance(x, IIter):
             innerN = rec(x.term)
@@ -587,7 +667,7 @@ def rewrite_term(term: Any, st: Any) -> Any:
 
         if isinstance(x, ITensorProd):
             fsN = tuple(rec(f) for f in x.factors)
-            y = _rewrite_tensor_sum_with_ket0(ITensorProd(fsN))
+            y = _distribute_tensor_over_sum(ITensorProd(fsN))
             if y is not None:
                 return canon_sum(y)
             return ITensorProd(fsN)
@@ -611,8 +691,8 @@ def rewrite_term(term: Any, st: Any) -> Any:
         return x
 
     out = term
-    from sp_pretty import pp
-    for _ in range(10):
+
+    for _ in range(12):
         print(f"\n out{_}: {pp(out)}")
         nxt = rec(out)
         print(f"\n nxt{_}: {pp(nxt)}")

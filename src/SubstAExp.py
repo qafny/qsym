@@ -54,15 +54,13 @@ class SubstAExp(ProgramVisitor):
 
 
     def visitSum(self, ctx: Programmer.QXSum):
-        sums = []
-        for elem in ctx.sums():
-            sums += [elem.accept(self)]
+            sums = []
+            for elem in ctx.sums():
+                sums += [elem.accept(self)]
 
-        ks = []
-        for kelem in ctx.kets():
-            ks += [kelem.accept(self)]
+            visited_tensor = ctx.kets().accept(self)
 
-        return QXSum(sums, ctx.amp().accept(self), ks)
+            return QXSum(sums, ctx.amp().accept(self), visited_tensor)
 
 
     def visitPart(self, ctx: Programmer.QXPart):
@@ -75,7 +73,7 @@ class SubstAExp(ProgramVisitor):
 
     def visitCon(self, ctx: Programmer.QXCon):
         v = ctx.range().accept(self)
-        return QXCon(ctx.ID(), v)
+        return QXCon(ctx.ID(), v, ctx.condition())
 
 
     def visitBind(self, ctx: Programmer.QXBind):

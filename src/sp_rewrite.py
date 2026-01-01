@@ -703,8 +703,6 @@ def rewrite_term(term: Any, st: Any) -> Any:
 
 class ShorVisitor(SubstAExp): 
     def __init__(self, sum_binder: str, loop_var: Any):
-        # No super().__init__ needed if ProgramVisitor doesn't require args, 
-        # or call it correctly if it does.
         super().__init__("DUMMY_VAR", None) 
         self.sum_binder = sum_binder
         self.loop_var = loop_var

@@ -58,7 +58,7 @@ DEFAULT_FILENAMES = [
     #   example_program("HammingWeight"),  
     #  example_program("DeutschJozsa"),
     #  example_program("simon"),
-      example_program("DiscreteLog"),
+  #    example_program("DiscreteLog"),
     # example_program("Grovers"),
     # example_program("QPE"),
     # example_program("SWAPTest"),

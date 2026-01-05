@@ -1,7 +1,6 @@
 .history/
 .hypothesis/
 .qvenv/
-pybackend/__pycache__/
+src/pybackend/__pycache__/
 .DS_Store
-pybackend/SPVisitor.py
 notes.txt

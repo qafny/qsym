@@ -1,31 +1,16 @@
 from __future__ import annotations
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
+from sp_utils import _cn, _call0, _mk_num, _mk_bin, _mk_uni, _mk_call, _mk_sket, _mk_tensor, _mk_sum, _mk_con, _mk_crange, _mk_bind
 from sp_terms import IApply, IIter, ILoopSummary, IStep, ICtrlGate, ITensorProd, IPostSelect
 from sp_pretty import pp
 from SubstAExp import SubstAExp
+from sp_simplify import sim_expr
 from SimplifyVisitor import SimplifyVisitor
 
 # -------------------------
 # Tiny duck-typing helpers
 # -------------------------
-
-_simplifier = SimplifyVisitor() 
-
-def sim_expr(expr):
-    return expr.accept(_simplifier)
-
-def _cn(x: Any) -> str:
-    return getattr(x, "__class__", type(x)).__name__
-
-def _call0(obj: Any, name: str, default=None):
-    f = getattr(obj, name, None)
-    if callable(f):
-        try:
-            return f()
-        except Exception:
-            return default
-    return getattr(obj, name, default)
 
 def _as_tuple(xs: Any) -> Tuple[Any, ...]:
     if xs is None:
@@ -112,54 +97,6 @@ def _get_flat_kets(obj: Any) -> List[Any]:
             out.extend(_get_flat_kets(f))
         return out
     return [obj]
-
-# -------------------------
-# AST constructors (robust)
-# -------------------------
-
-def _mk_bind(name: str):
-    from Programmer import QXBind
-    return QXBind(id=name)
-
-def _mk_num(i: int):
-    from Programmer import QXNum
-    return QXNum(num=i)
-
-def _mk_bin(op: str, left: Any, right: Any):
-    from Programmer import QXBin
-    return QXBin(op=op, left=left, right=right)
-
-def _mk_uni(op: str, nxt: Any):
-    from Programmer import QXUni
-    return QXUni(op=op, next=nxt)
-
-def _mk_crange(lo: Any, hi: Any):
-    from Programmer import QXCRange
-    return QXCRange(left=lo, right=hi)
-
-def _mk_con(id_: str, cr: Any, cond: Any = None):
-    from Programmer import QXCon
-    try:
-        return QXCon(id=id_, crange=cr, condtion=cond)
-    except TypeError:
-        return QXCon(id=id_, crange=cr, condition=cond)
-
-def _mk_sket(v: Any):
-    from Programmer import QXSKet
-    return QXSKet(vector=v)
-
-def _mk_tensor(kets: List[Any]):
-    from Programmer import QXTensor
-    return QXTensor(kets=kets, id='None', crange=None)
-
-def _mk_sum(cons: List[Any], amp: Any, tensor: Any):
-    from Programmer import QXSum
-    return QXSum(sums=cons, amp=amp, tensor=tensor)
-
-def _mk_had(s: str):
-    from Programmer import QXHad
-    return QXHad(s)
-
 
 # -------------------------
 # Alpha-canonicalization for QXSum

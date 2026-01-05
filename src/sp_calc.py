@@ -592,7 +592,7 @@ def _sp_assert(stmt: Any, st: ExecState) -> None:
     )
 
     from sp_discharge import discharge_vc
-    r = discharge_vc(st, vc)
+    r = discharge_vc(st, vc) 
     if not r.ok:
         from sp_pretty import pp_vc
         raise AssertionError(f"Assertion failed: {r.reason}\n{pp_vc(vc)}")

@@ -97,3 +97,83 @@ def _mk_sum(cons: list[Any], amp: Any, tensor: Any):
 def _mk_had(s: str):
     from Programmer import QXHad
     return QXHad(s)
+
+class FreeVarCollector:
+    def __init__(self):
+        self.free = set()
+        self.bound = set()
+
+    def visit(self, node: Any):
+        if node is None: return
+        cn = _cn(node)
+
+        # 1. QXSum (Quantum State Sums)
+        if cn == "QXSum":
+            # Visit bounds first (e.g. 0..N) - N is free
+            cons = list(_call0(node, "sums", []) or [])
+            for c in cons:
+                self.visit(_call0(c, "crange"))
+            
+            # Bind indices (k) - k is bound
+            new_binds = []
+            for c in cons:
+                bid = str(_call0(c, "ID"))
+                if bid not in self.bound:
+                    self.bound.add(bid)
+                    new_binds.append(bid)
+            
+            # Visit body with k bound
+            self.visit(_call0(node, "amp"))
+            self.visit(_call0(node, "tensor"))
+            self.visit(_call0(node, "kets"))
+
+            # Unbind
+            for bid in new_binds: self.bound.remove(bid)
+            return
+
+        # defensive check
+        if cn == "IIter":
+            # Visit loop bounds (0..N) - N is free
+            self.visit(_call0(node, "lo"))
+            self.visit(_call0(node, "hi"))
+            
+            # Bind loop var (i) - i is bound
+            bid = str(_call0(node, "binder"))
+            is_new = False
+            if bid not in self.bound:
+                self.bound.add(bid)
+                is_new = True
+            
+            # Visit the summarized body
+            self.visit(_call0(node, "body_summary"))
+            self.visit(_call0(node, "term"))
+            
+            if is_new: self.bound.remove(bid)
+            return
+
+        # 3. Variable Usage
+        if cn == "QXBind":
+            name = str(_call0(node, "ID"))
+            if name not in self.bound:
+                self.free.add(name)
+            return
+
+        # 4. Standard Recursion (Gates, Ops, Expressions)
+
+        children_attrs = [
+            "left", "right", "op", "exps", "target", "phase", 
+            "condtion", "factors", "pre_term", "meas_value", "crange",
+            "steps", "controls", "targets", "guard" # 
+        ]
+        
+        for attr in children_attrs:
+            child = _call0(node, attr)
+            if isinstance(child, (list, tuple)):
+                for c in child: self.visit(c)
+            else:
+                self.visit(child)
+
+def get_real_free_vars(node: Any) -> Set[str]:
+    c = FreeVarCollector()
+    c.visit(node)
+    return c.free

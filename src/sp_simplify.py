@@ -81,21 +81,7 @@ def _one_over_sqrt_arg(x: Any) -> Any:
 
 class SimplifyVisitor:
     """
-    Duck-typed visitor for your QX AST nodes.
-
-    Expected `.accept(self)` calls:
-      - QXNum.accept -> visitNum
-      - QXBind.accept -> visitBind
-      - QXBin.accept -> visitBin
-      - QXUni.accept -> visitUni
-      - QXCall.accept -> visitCall
-      - QXSKet.accept -> visitSKet
-      - QXVKet.accept -> visitVKet
-      - QXTensor.accept -> visitTensor
-      - QXCRange.accept -> visitCRange
-      - QXCon.accept -> visitCon
-      - QXSum.accept -> visitSum
-      - QXQRange.accept -> visitQRange
+    Duck-typed visitor for QX AST nodes.
     """
 
     # ---- terminals ----
@@ -158,6 +144,46 @@ class SimplifyVisitor:
                 # Keep rational as division node if not integral
                 if (li % ri) == 0:
                     return _mk_num(li // ri)
+
+        if op == "^":
+            # Very light folding: 2^0, x^1, x^0
+            if _is_zero(rS): return _mk_num(1)
+            if _is_one(rS): return lS
+            if li is not None and ri is not None and ri >= 0:
+                try:
+                    return _mk_num(li ** ri)
+                except Exception:
+                    pass
+                
+        # Modulo simplifications (for modular arithmetic in Shor-style specs)
+        if op == "%":
+            # (x % N) % N  ==>  x % N
+            if _cn(lS) == "QXBin" and str(_call0(lS, "op")) == "%":
+                inner_left = _call0(lS, "left")
+                inner_mod  = _call0(lS, "right")
+                if _same_repr(inner_mod, rS):
+                    return _mk_bin("%", inner_left, rS)
+
+            # (a * (b % N)) % N  ==>  (a*b) % N
+            # ((a % N) * b) % N  ==>  (a*b) % N
+            # ((a % N) * (b % N)) % N  ==>  (a*b) % N
+            if _cn(lS) == "QXBin" and str(_call0(lS, "op")) == "*":
+                a = _call0(lS, "left")
+                b = _call0(lS, "right")
+
+                if _cn(b) == "QXBin" and str(_call0(b, "op")) == "%" and _same_repr(_call0(b, "right"), rS):
+                    return _mk_bin("%", _mk_bin("*", a, _call0(b, "left")), rS)
+
+                if _cn(a) == "QXBin" and str(_call0(a, "op")) == "%" and _same_repr(_call0(a, "right"), rS):
+                    return _mk_bin("%", _mk_bin("*", _call0(a, "left"), b), rS)
+
+                if (
+                    _cn(a) == "QXBin" and str(_call0(a, "op")) == "%" and _same_repr(_call0(a, "right"), rS)
+                    and _cn(b) == "QXBin" and str(_call0(b, "op")) == "%" and _same_repr(_call0(b, "right"), rS)
+                ):
+                    return _mk_bin("%", _mk_bin("*", _call0(a, "left"), _call0(b, "left")), rS)
+
+            return _mk_bin("%", lS, rS)
 
         if op == "^":
             # Very light folding: 2^0, x^1, x^0

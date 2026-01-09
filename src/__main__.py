@@ -58,7 +58,7 @@ DEFAULT_FILENAMES = [
     #   example_program("HammingWeight"),  
     #  example_program("DeutschJozsa"),
     #  example_program("simon"),
-  #    example_program("DiscreteLog"),
+#      example_program("DiscreteLog"),
     # example_program("Grovers"),
     # example_program("QPE"),
     # example_program("SWAPTest"),
@@ -151,6 +151,19 @@ if __name__ == "__main__":
             transformer = ProgramTransformer()
             qafny_ast = transformer.visitProgram(ast)
             print(qafny_ast)
+
+            collector = CollectKind()
+            success = qafny_ast.accept(collector)
+            kind_env = collector.get_kenv()
+            print(f"\n kind_env: {kind_env}")
+
+
+            if success:
+                kind_env = collector.get_kenv()
+                print(f"\n kind_env: {kind_env}")
+            else:
+                print(f"Verification failed: Variable used without definition or type mismatch. \n {success}")
+
             
             # MODE 1: PBT Concolic Execution
             if args.mode == 'pbt':

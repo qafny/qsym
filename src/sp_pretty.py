@@ -264,9 +264,31 @@ def pp_vc(vc: Any) -> str:
 def pp_discharge_result(res: Any) -> str:
     status = "OK" if res.ok else "FAIL"
     reason = res.reason
-    vc_str = pp_vc(res.norm_vc)
+    target_vc = res.norm_vc if getattr(res, "norm_vc", None) is not None else res.vc
+        
+    try:
+        vc_str = pp_vc(target_vc)
+    except Exception as e:
+        vc_str = f"<Error printing VC: {e}>"
+
     # Indent the VC for better readability
     indented_vc = vc_str.replace('\n', '\n    ')
-    return (f"  Result: [{status}]\n"
-            f"  Reason: {reason}\n" 
-            f"  {indented_vc}") 
+    # Base Output
+    output_lines = [
+        f"  Result: [{status}]",
+        f"  Reason: {reason}"
+    ]
+
+    # Check for Evidence/Counterexample (Z3 Model or PBT Env)
+    print(f"\n res: {res}")
+    evidence = getattr(res, "evidence", None)
+    if evidence is not None:
+        # Format evidence simply by converting to string and indenting
+        ev_str = str(evidence).replace('\n', '\n    ')
+        output_lines.append(f"  Counterexample / Evidence:\n    {ev_str}")
+
+    # Append the VC
+    output_lines.append(f"  {indented_vc}")
+    
+    return "\n".join(output_lines)
+

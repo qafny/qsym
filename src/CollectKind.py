@@ -167,7 +167,7 @@ class CollectKind(ProgramVisitor):
             if str(i) not in self.tenv:
                 self.tenv.update({str(i):QXQTy()})
         
-        for i in ctx.vectors():
+        for i in ctx.kets():
             v = v and i.accept(self)
         return v
     

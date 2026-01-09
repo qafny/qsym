@@ -1,9 +1,8 @@
 //r is the order, this function is to do analysis, not the computation. We need to analysis that the shor's algorithm can produce r.
 method Shors(n: nat, q: Q[n], p: Q[n], N: nat, base: nat, r: nat , c: nat) returns (y: nat) //, py: real)
-  //requires 1 < base
   requires 1 < base < N
- // requires gcd(base,N) == 1
-  //requires N <= 2 ^ n //if we do not want allow this syntax, fine.
+  requires gcd(base,N) == 1
+  requires N <= 2 ^ n //if we do not want allow this syntax, fine.
   //requires gcd(base,N) == 1 // don't need because the assumption is implied in lemma
   //requires order(base,N) == r 
   requires 0 < r <= 2^n

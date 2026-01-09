@@ -30,9 +30,10 @@ def compute_sp(ast, arg_values: Optional[Dict[str, Any]] = None, want_trace: boo
     v = SPVisitor(arg_values=arg_values or {}, want_trace=want_trace, want_discharge=want_discharge)
 
     try:
-        ast.accept(v)
+        result = ast.accept(v)
     except Exception:
         raise
+    print(f"\n result: {result}")
     finals = v.finals
     vcs = v.all_vcs()
 
@@ -40,8 +41,15 @@ def compute_sp(ast, arg_values: Optional[Dict[str, Any]] = None, want_trace: boo
     if want_discharge:
         ok_vcs, bad_vcs = discharge_all(finals)
 
-    print('\n ok: ', ok_vcs)
-    print('\n bad: ', bad_vcs)
+    from sp_pretty import pp_discharge_result
+
+    print('\n--- Verified Constraints (OK) ---')
+    for i, res in enumerate(ok_vcs):
+        print(f"#{i} {pp_discharge_result(res)}")
+
+    print('\n--- Failed Constraints (BAD) ---')
+    for i, res in enumerate(bad_vcs):
+        print(f"#{i} {pp_discharge_result(res)}")
 
     return SPResult(
         finals=finals,
@@ -151,18 +159,21 @@ class SPVisitor:
             st.cstore[k] = v
 
         # Also install binding defaults if bindings are QXBind nodes with initializers (ignored if absent)
-        try:
-            bindings = method.bindings() or []
-        except Exception:
-            bindings = []
-        for b in bindings:
-            try:
-                name = b.ID()
-                init = getattr(b, "init", lambda: None)()
-                if init is not None and name not in st.cstore:
-                    st.cstore[name] = init
-            except Exception:
-                pass
+        from CollectKind import CollectKind
+        from Programmer import QXBind, TySingle
+
+        collector = CollectKind()
+        method.accept(collector) 
+        
+        method_name = str(method.ID())
+        local_env, _ = collector.get_kenv().get(method_name, ({}, {}))
+
+        for var_name, var_type in local_env.items():
+            # If we already have a concrete value, skip
+            if var_name in st.cstore:
+                continue
+            if isinstance(var_type, TySingle):
+                 st.cstore[var_name] = QXBind(id=f"{var_name}_sym")
 
         # Process method conditions: requires into pc/qstore; collect ensures specs.
         # duck-typing + class-name checks.
@@ -229,6 +240,7 @@ class SPVisitor:
 
         # Emit ensures VCs for each final path
         for st2 in self.paths:
+            print(f"\n self.finals: {st2.cstore}")
             for ens in self._ensures:
                 st2.vcs.append(VC(
                     antecedent_qstore=dict(st2.qstore), 

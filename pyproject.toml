@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "qsym"
+version = "0.1.0"
+description = "Quantum Symbolic Execution"
+readme = "README.md"
+requires-python = ">=3.9"
+
+
+dependencies = [
+    "z3-solver>=4.14.1.0",           
+    "antlr4-python3-runtime==4.9.2", 
+    "hypothesis>=6.125.3",           
+    "rich>=14.2.0",                  
+    "sympy>=1.13.3"                 
+]
+
+[project.optional-dependencies]
+dev = [
+    "antlr4-tools>=0.2.1",
+    "install-jdk>=1.1.0",
+    "pytest"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]  

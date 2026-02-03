@@ -27,7 +27,7 @@ python -m qsym --help
 Run an example script:
 
 ```bash
-python examples/runners/run_qafny_examples.py
+python src/examples/runners/run_qafny_programs.py Shors
 ```
 
 

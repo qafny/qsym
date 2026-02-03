@@ -1,6 +1,6 @@
 
-from Programmer import QXCall, QXNum, QXBin
-from SubstAExp import SubstAExp
+from qsym.ast.Programmer import QXCall, QXNum, QXBin
+from .SubstAExp import SubstAExp
 
 
 class SimplifyVisitor(SubstAExp):

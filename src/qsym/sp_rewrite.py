@@ -1,12 +1,12 @@
 from __future__ import annotations
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
-from sp_utils import _cn, _call0, _mk_num, _mk_bin, _mk_uni, _mk_call, _mk_sket, _mk_tensor, _mk_sum, _mk_con, _mk_crange, _mk_bind
-from sp_terms import IApply, IIter, ILoopSummary, IStep, ICtrlGate, ITensorProd, IPostSelect
-from sp_pretty import pp
-from SubstAExp import SubstAExp
-from sp_simplify import sim_expr
-from SimplifyVisitor import SimplifyVisitor
+from .sp_utils import _cn, _call0, _mk_num, _mk_bin, _mk_uni, _mk_call, _mk_sket, _mk_tensor, _mk_sum, _mk_con, _mk_crange, _mk_bind
+from .sp_terms import IApply, IIter, ILoopSummary, IStep, ICtrlGate, ITensorProd, IPostSelect
+from .sp_pretty import pp
+from .sp_simplify import sim_expr
+from qsym.analysis.SubstAExp import SubstAExp
+from qsym.analysis.SimplifyVisitor import SimplifyVisitor
 
 # -------------------------
 # Tiny duck-typing helpers
@@ -110,7 +110,7 @@ def _subst_bind(expr: Any, mapping: Dict[str, str]) -> Any:
     
     res = expr
     for src, tgt in mapping.items():
-        from Programmer import QXBind, QXNum
+        from qsym.ast.Programmer import QXBind, QXNum
         print(f"scr, tgt {src}, {tgt}")
         if isinstance(tgt, int):
             node = QXNum(num=int(tgt))
@@ -162,7 +162,7 @@ def canon_sum(term: Any) -> Any:
                 break
             
     if inner_sum:
-        from Programmer import QXSum, QXBin
+        from qsym.ast.Programmer import QXSum, QXBin
         inner_cons = list(_call0(inner_sum, "sums", []) or [])
         
         # Collision handling: check if inner vars collide with outer
@@ -271,7 +271,7 @@ def _rewrite_apply_expand_H0(op: Any, tgt: Tuple[Any, ...], inner: Any) -> Optio
         width = _mk_bin("-", hi, lo)
 
     if _is_ket1(inner):
-        from Programmer import QXHad
+        from qsym.ast.Programmer import QXHad
         vis = SubstAExp("1", QXHad("-"))
         ket = vis.visit(inner)
         return ket
@@ -323,7 +323,7 @@ def _distribute_tensor_over_sum(term: Any) -> Optional[Any]:
 
     new_kets_obj = _mk_tensor(final_kets_list)
 
-    from Programmer import QXSum
+    from qsym.ast.Programmer import QXSum
     return QXSum(
         sums=_call0(sum_node, "sums"),
         amp=_call0(sum_node, "amp"),
@@ -424,11 +424,11 @@ def _rewrite_apply_oracle_on_sum(op: Any, tgt: Tuple[Any, ...], inner: Any) -> O
                  mapping[y_var] = _mk_num(0)
              raw_f_x = _subst_bind(vec_expr, mapping)
              f_x = sim_expr(raw_f_x)
-             from Programmer import QXCall
+             from qsym.ast.Programmer import QXCall
              new_phase = QXCall(id='omega', exps=[f_x, _mk_num(1)], inverse=False)
         
         if new_phase:
-            from Programmer import QXBin
+            from qsym.ast.Programmer import QXBin
             new_amp = QXBin(op='*', left=amp, right=new_phase)
             if target_term and isinstance(inner, ITensorProd):
                  new_sum = _mk_sum(cons, new_amp, _mk_tensor([ks[0]]))
@@ -539,7 +539,7 @@ def _rewrite_oracle_iter(term: Any) -> Optional[Any]:
         
         if not checker.found:
             if _is_increment_expr(oracle_vec):
-                from Programmer import QXCall
+                from qsym.ast.Programmer import QXCall
                 new_vec = QXCall(id='countN', exps=[_mk_bind(k_id)], inverse=False)
             
         else:

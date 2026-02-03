@@ -3,9 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, List, Optional, Tuple, Dict
 
-from sp_state import VC, ExecState
-from sp_normalization import normalize_qspec
-from sp_utils import _cn, _call0
+from .sp_state import VC, ExecState
+from .sp_normalization import normalize_qspec
+from .sp_utils import _cn, _call0
 import random
 
 try:
@@ -15,8 +15,8 @@ except ImportError:
     HAS_Z3 = False
 
 # Import the logic
-from sp_z3 import entails_pc_tier1_z3
-from sp_pbt import entails_qspec_tier2_pbt, entails_pred_tier2_pbt
+from .sp_z3 import entails_pc_tier1_z3
+from .sp_pbt import entails_qspec_tier2_pbt, entails_pred_tier2_pbt
 
 # -----------------------------
 # Configuration & Result
@@ -139,7 +139,7 @@ def discharge_vc(st: ExecState, vc: VC, cfg: Optional[DischargeConfig] = None) -
         antN = normalize_qspec(ant_spec, st)
         goalN = normalize_qspec(cons, st)
 
-        from sp_pretty import pp
+        from .sp_pretty import pp
         print(f"verifying: {pp(antN)} ==> {pp(goalN)}")
         
         # Tier 0: Strict Equality, skip for now to work on pbt 

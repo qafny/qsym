@@ -1,9 +1,9 @@
-import LocusCollector
-import Programmer
-from ProgramVisitor import ProgramVisitor
-from CollectKind import *
-from SimpAExp import SimpAExp
-from SubstAExp import SubstAExp
+from .LocusCollector import LocusCollector
+from qsym.ast import Programmer
+from qsym.ast import ProgramVisitor
+from .CollectKind import *
+from .SimpAExp import SimpAExp
+from .SubstAExp import SubstAExp
 
 
 def compareQRange(q1: QXQRange, q2: QXQRange):

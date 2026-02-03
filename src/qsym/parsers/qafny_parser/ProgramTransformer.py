@@ -8,12 +8,20 @@ from operator import truediv
 
 from antlr4 import ParserRuleContext
 
-from ExpLexer import *
-from ExpVisitor import *
-from Programmer import *
-from ExpParser import *
+from .ExpLexer import *
+from .ExpVisitor import *
+from .ExpParser import *
 
-import utils
+try:
+    from qsym.ast.Programmer import *
+except ImportError:
+    try:
+        from qsym.ast.Programmer import *
+    except ImportError:
+        raise
+
+from .utils import *
+
 
 """Transforms an ANTLR AST into a Qafny one."""
 class ProgramTransformer(ExpVisitor):
@@ -1202,7 +1210,7 @@ class ProgramTransformer(ExpVisitor):
 
     # Visit a parse tree produced by ExpParser#numexp.
     def visitNumexp(self, ctx: ExpParser.NumexpContext):
-        return QXNum(utils.str_to_num(ctx.getText()),  line_number=ctx.start.line)
+        return QXNum(str_to_num(ctx.getText()),  line_number=ctx.start.line)
 
     # Visit a parse tree produced by ExpParser#typeT.
     def visitTypeT(self, ctx: ExpParser.TypeTContext):

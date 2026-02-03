@@ -23,10 +23,10 @@ Design notes
 
 from dataclasses import dataclass
 from typing import Any, Optional, Tuple
-from sp_utils import _cn, _call0, _mk_num, _mk_bin, _mk_uni, _mk_call
+from .sp_utils import _cn, _call0, _mk_num, _mk_bin, _mk_uni, _mk_call
 
 # Internal operational nodes
-from sp_terms import IApply, IIter, ILoopSummary, IStep, ICtrlGate, ITensorProd, IPostSelect
+from .sp_terms import IApply, IIter, ILoopSummary, IStep, ICtrlGate, ITensorProd, IPostSelect
 
 def _is_num(x: Any) -> bool:
     return _cn(x) == "QXNum"

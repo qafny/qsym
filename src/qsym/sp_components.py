@@ -1,9 +1,9 @@
 from __future__ import annotations
 from typing import Any, Dict, List, Optional, Tuple, Set
 
-from sp_state import ExecState, get_regs
-from sp_qtys import join_qty
-from sp_terms import ITensorProd
+from .sp_state import ExecState, get_regs
+from .sp_qtys import join_qty
+from .sp_terms import ITensorProd
 
 
 # Handle loci comparison if available
@@ -55,7 +55,8 @@ def touches_components(st: ExecState, target_locus: List[Any]) -> Set[int]:
     for cid in candidates:
         spec = st.qstore.get(cid)
         if spec is None: continue
-        
+
+        print(f"\n spec: {spec}")    
         spec_regs = get_regs(spec.locus())
         # Intersection check
         if not tgt_regs.isdisjoint(spec_regs):
@@ -110,7 +111,7 @@ def merge_components(st: ExecState, hits: Set[int]) -> int:
     new_term = ITensorProd(factors=tuple(term_factors))
     
     # Update Survivor
-    from Programmer import QXQSpec
+    from qsym.ast.Programmer import QXQSpec
     new_spec = QXQSpec(locus=new_locus, qty=new_qty, states=[new_term])
     st.qstore[survivor] = new_spec
     

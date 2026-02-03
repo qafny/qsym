@@ -28,7 +28,7 @@ def is_en(q: Any) -> bool:
         return q.__class__.__name__ == "TyEn"
 
 def _fresh_en(fresh_flag: Any) -> Any:
-    from Programmer import TyEn
+    from qsym.ast.Programmer import TyEn
     return TyEn(flag=fresh_flag)
 
 def join_qty(q1: Any, q2: Any, *, fresh_flag: Any) -> Any:

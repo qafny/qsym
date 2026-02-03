@@ -2,7 +2,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 import random
-from sp_normalization import normalize_qspec
+from .sp_normalization import normalize_qspec
 
 try:
     import z3
@@ -17,13 +17,13 @@ try:
 except ImportError:
     HAS_HYPOTHESIS = False
 
-from sp_state import ExecState
-from sp_utils import _cn, _call0
+from .sp_state import ExecState
+from .sp_utils import _cn, _call0
 
 # We need the translator to convert AST constraints (st.pc) into Z3 constraints
 # Assuming sp_tier1.py is in the same directory
 try:
-    from sp_z3 import Z3Translator
+    from .sp_z3 import Z3Translator
 except ImportError:
     class Z3Translator:
         def __init__(self): self.vars = {}

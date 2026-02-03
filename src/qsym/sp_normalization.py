@@ -1,9 +1,9 @@
 from __future__ import annotations
 from typing import Any, List
 
-from sp_rewrite import rewrite_term, canon_sum  # single source of truth
-from sp_simplify import deep_simplify
-from sp_pretty import pp
+from .sp_rewrite import rewrite_term, canon_sum  # single source of truth
+from .sp_simplify import deep_simplify
+from .sp_pretty import pp
 
 def _call_list(obj: Any, name: str, default=None) -> list:
     f = getattr(obj, name, None)
@@ -44,7 +44,7 @@ def normalize_qspec(spec: Any, st: Any) -> Any:
 #    new_states = [rewrite_term(t, st) for t in states]
     print(f"\n new_states {pp(new_states[0])}")
 
-    from Programmer import QXQSpec
+    from qsym.ast.Programmer import QXQSpec
     try:
         return QXQSpec(locus=locus, qty=qty, states=new_states)
     except TypeError:

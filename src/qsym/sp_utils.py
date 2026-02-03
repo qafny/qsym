@@ -42,37 +42,37 @@ def _call0(obj: Any, name: str, default=None):
 # -------------------------
 
 def _mk_bind(name: str):
-    from Programmer import QXBind
+    from qsym.ast.Programmer import QXBind
     return QXBind(id=name)
 
 
 def _mk_num(i: int):
-    from Programmer import QXNum
+    from qsym.ast.Programmer import QXNum
     return QXNum(num=i)
 
 
 def _mk_bin(op: str, left: Any, right: Any):
-    from Programmer import QXBin
+    from qsym.ast.Programmer import QXBin
     return QXBin(op=op, left=left, right=right)
 
 
 def _mk_uni(op: str, nxt: Any):
-    from Programmer import QXUni
+    from qsym.ast.Programmer import QXUni
     return QXUni(op=op, next=nxt)
 
 
 def _mk_call(fid: str, exps: list[Any], inverse: bool = False):
-    from Programmer import QXCall
+    from qsym.ast.Programmer import QXCall
     return QXCall(id=fid, exps=exps, inverse=inverse)
 
 
 def _mk_crange(lo: Any, hi: Any):
-    from Programmer import QXCRange
+    from qsym.ast.Programmer import QXCRange
     return QXCRange(left=lo, right=hi)
 
 
 def _mk_con(id_: str, cr: Any, cond: Any = None):
-    from Programmer import QXCon
+    from qsym.ast.Programmer import QXCon
     try:
         return QXCon(id=id_, crange=cr, condtion=cond)
     except TypeError:
@@ -80,22 +80,22 @@ def _mk_con(id_: str, cr: Any, cond: Any = None):
 
 
 def _mk_sket(v: Any):
-    from Programmer import QXSKet
+    from qsym.ast.Programmer import QXSKet
     return QXSKet(vector=v)
 
 
 def _mk_tensor(kets: list[Any]):
-    from Programmer import QXTensor
+    from qsym.ast.Programmer import QXTensor
     return QXTensor(kets=kets, id='None', crange=None)
 
 
 def _mk_sum(cons: list[Any], amp: Any, tensor: Any):
-    from Programmer import QXSum
+    from qsym.ast.Programmer import QXSum
     return QXSum(sums=cons, amp=amp, tensor=tensor)
 
 
 def _mk_had(s: str):
-    from Programmer import QXHad
+    from qsym.ast.Programmer import QXHad
     return QXHad(s)
 
 class FreeVarCollector:

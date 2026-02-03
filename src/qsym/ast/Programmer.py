@@ -1,7 +1,7 @@
-import AbstractProgramVisitor
+from .AbstractProgramVisitor import AbstractProgramVisitor
 
-import utils # for make_repr(...)
-from utils import hasmembervariable
+from qsym.parsers.qafny_parser import utils # for make_repr(...)
+#from utils import hasmembervariable
 
 from typing import (
     Callable,

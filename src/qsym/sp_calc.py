@@ -3,14 +3,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
-from sp_state import ExecState, TraceStep, VC
-from sp_eval import try_eval_int, as_bool_not
+from .sp_state import ExecState, TraceStep, VC
+from .sp_eval import try_eval_int, as_bool_not
 
-from sp_terms import ICtrlGate, IIter, ILoopSummary, IStep, IPostSelect, IMeasure, apply_op_to_qspec
-from sp_components import ensure_component_for
-from sp_normalization import normalize_qspec
-from sp_discharge import DischargeResult, discharge_all
-from SubstAExp import SubstAExp
+from .sp_terms import ICtrlGate, IIter, ILoopSummary, IStep, IPostSelect, IMeasure, apply_op_to_qspec
+from .sp_components import ensure_component_for
+from .sp_normalization import normalize_qspec
+from .sp_discharge import DischargeResult, discharge_all
+from qsym.analysis.SubstAExp import SubstAExp
 
 
 
@@ -41,7 +41,7 @@ def compute_sp(ast, arg_values: Optional[Dict[str, Any]] = None, want_trace: boo
     if want_discharge:
         ok_vcs, bad_vcs = discharge_all(finals)
 
-    from sp_pretty import pp_discharge_result
+    from .sp_pretty import pp_discharge_result
 
     print('\n--- Verified Constraints (OK) ---')
     for i, res in enumerate(ok_vcs):
@@ -159,8 +159,8 @@ class SPVisitor:
             st.cstore[k] = v
 
         # Also install binding defaults if bindings are QXBind nodes with initializers (ignored if absent)
-        from CollectKind import CollectKind
-        from Programmer import QXBind, TySingle
+        from qsym.analysis.CollectKind import CollectKind
+        from qsym.ast.Programmer import QXBind, TySingle
 
         collector = CollectKind()
         method.accept(collector) 
@@ -403,15 +403,15 @@ def _sp_measure(stmt: Any, st: "ExecState") -> "ExecState":
     """
     st = st.clone(copy_pi=False)
 
-    from Programmer import QXBind, QXComp, QXNum, QXTensor, QXSKet, QXQSpec, TyNor
-    from sp_components import ensure_component_for
+    from qsym.ast.Programmer import QXBind, QXComp, QXNum, QXTensor, QXSKet, QXQSpec, TyNor
+    from .sp_components import ensure_component_for
     try:
-        from sp_components import owner_component  # if you have it
+        from .sp_components import owner_component  # if you have it
     except Exception:
         owner_component = None
 
     try:
-        from sp_terms import IPostSelect
+        from .sp_terms import IPostSelect
     except Exception:
         IPostSelect = None
 
@@ -603,7 +603,7 @@ def _sp_assert(stmt: Any, st: ExecState) -> None:
         origin="user-assert",
     )
 
-    from sp_discharge import discharge_vc
+    from .sp_discharge import discharge_vc
     r = discharge_vc(st, vc) 
     if not r.ok:
         from sp_pretty import pp_vc
@@ -641,7 +641,7 @@ def _sp_for(stmt: Any, st: ExecState, v: SPVisitor) -> List[ExecState]:
     def _subst_range(qr: Any, visitor: SubstAExp) -> Any:
         if _clsname(qr) != "QXQRange": return qr
         try:
-            from Programmer import QXQRange, QXCRange
+            from qsym.ast.Programmer import QXQRange, QXCRange
             cr = qr.crange()
             # Apply visitor to left and right bounds
             new_cr = QXCRange(left=visitor.visit(cr.left()), right=visitor.visit(cr.right()))
@@ -654,7 +654,7 @@ def _sp_for(stmt: Any, st: ExecState, v: SPVisitor) -> List[ExecState]:
         if n == "QXSingle": return op
         if n == "QXOracle":
             try:
-                from Programmer import QXOracle, QXSKet, QXCall
+                from qsym.ast.Programmer import QXOracle, QXSKet, QXCall
                 phase = op.phase()
                 # Phase is expression or call
                 phase2 = visitor.visit(phase)
@@ -696,7 +696,7 @@ def _sp_for(stmt: Any, st: ExecState, v: SPVisitor) -> List[ExecState]:
                 for s0 in cur:
                     s1 = s0.clone(copy_pi=False)
                     try:
-                        from Programmer import QXNum
+                        from qsym.ast.Programmer import QXNum
                         s1.cstore[loop_var] = QXNum(num=k)
                     except Exception:
                         s1.cstore[loop_var] = k
@@ -712,9 +712,9 @@ def _sp_for(stmt: Any, st: ExecState, v: SPVisitor) -> List[ExecState]:
 
     # --------- Tier B: symbolic summary ---------
 
-    from sp_components import ensure_component_for
-    from sp_qtys import degrade_qty  
-    from Programmer import QXBind, QXQSpec
+    from .sp_components import ensure_component_for
+    from .sp_qtys import degrade_qty  
+    from qsym.ast.Programmer import QXBind, QXQSpec
 
     st2 = st.clone(copy_pi=False)
     st2.enter_scope()

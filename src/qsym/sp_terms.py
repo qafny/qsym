@@ -2,7 +2,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, List, Sequence, Tuple
 
-from sp_qtys import degrade_qty
+from .sp_qtys import degrade_qty
 
 # -----------------------------
 # Internal term nodes
@@ -122,7 +122,7 @@ def apply_op_to_qspec(qspec: Any, op: Any, target_locus: Sequence[Any], st: Any)
 
     # 4) rebuild spec
     try:
-        from Programmer import QXQSpec
+        from qsym.ast.Programmer import QXQSpec
         return QXQSpec(locus=locus, qty=new_qty, states=new_states)
     except Exception:
         # Fallback: return a lightweight tuple (debug only)

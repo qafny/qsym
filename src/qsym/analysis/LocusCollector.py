@@ -1,8 +1,8 @@
-import Programmer
-from ProgramVisitor import ProgramVisitor
-from Programmer import *
-from TypeChecker import *
-from CollectKind import *
+from src.qsym.ast import Programmer
+from src.qsym.ast import ProgramVisitor
+from src.qsym.ast.Programmer import *
+from .TypeChecker import *
+from .CollectKind import *
 
 def joinRange(q1:QXQRange, qs:[QXQRange]):
     tmp = []

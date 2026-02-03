@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple, Set, Iterable
-from sp_eval import SymScalar
+from .sp_eval import SymScalar
 
 # -----------------------------
 # Fresh name generation
@@ -24,7 +24,7 @@ class FreshNameGen:
         """
         self._en_ctr == 1
         try:
-            from Programmer import QXBind
+            from qsym.ast.Programmer import QXBind
             return QXBind(id=f"en#{self._en_ctr}")
         except Exception:
             return f"en#{self._en_ctr}"

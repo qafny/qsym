@@ -1,8 +1,8 @@
-import Programmer
-from ProgramVisitor import ProgramVisitor
+from qsym.ast import Programmer
+from qsym.ast.ProgramVisitor import ProgramVisitor
 from copy import deepcopy
 
-from Programmer import *
+from qsym.ast.Programmer import *
 
 
 def compareAExp(a1: QXAExp, a2: QXAExp):

@@ -42,9 +42,9 @@ python examples/runners/run_qafny_examples.py
 * `src/qsym/parsers/`: qafny/qiskit parsers
 
 * `examples/`: example programs (Qafny / Qiskit sources)
-    * `examples/runners/` — Python entry scripts
-    * `examples/qafny/` — `.qfy` programs
-    * `examples/qiskit/` — Qiskit circuits (`.py`)
+    * `examples/runners/`: Python entry scripts
+    * `examples/qafny/`: `.qfy` programs
+    * `examples/qiskit/`: Qiskit circuits (`.py`)
 
 
 

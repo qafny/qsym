@@ -1,7 +1,7 @@
-import Programmer
-from ProgramVisitor import ProgramVisitor
-from Programmer import *
-from TypeChecker import *
+from qsym.ast import Programmer
+from qsym.ast.ProgramVisitor import ProgramVisitor
+from qsym.ast.Programmer import *
+#from .TypeChecker import *
 
 
 class SubstAExp(ProgramVisitor):

@@ -4,16 +4,16 @@ import rich
 import sys
 
 from antlr4 import FileStream, CommonTokenStream  
-from ExpLexer import ExpLexer  
-from ExpParser import ExpParser  
-from ProgramTransformer import ProgramTransformer 
-from CollectKind import CollectKind 
-from TypeCollector import TypeCollector 
-from TypeChecker import TypeChecker 
+from qsym.parsers.qafny_parser.ExpLexer import ExpLexer  
+from qsym.parsers.qafny_parser.ExpParser import ExpParser  
+from qsym.parsers.qafny_parser.ProgramTransformer import ProgramTransformer 
+from qsym.analysis.CollectKind import CollectKind 
+from qsym.analysis.TypeCollector import TypeCollector 
+from qsym.analysis.TypeChecker import TypeChecker 
 import subprocess 
 import re 
-from sp_calc import compute_sp
-from Programmer import QXNum
+from qsym.sp_calc import compute_sp
+from qsym.ast.Programmer import QXNum
 
 #######################################
 # Qafny Options (a.k.a. Defines)
@@ -54,8 +54,8 @@ DEFAULT_FILENAMES = [
 #      example_program("GHZ"),
 #     example_program("Teleportation"),
     # example_program("Superdense"),
-     example_program("Shors"), 
-    #   example_program("HammingWeight"),  
+    # example_program("Shors"), 
+       example_program("HammingWeight"),  
     #  example_program("DeutschJozsa"),
     #  example_program("simon"),
 #      example_program("DiscreteLog"),
@@ -79,8 +79,8 @@ DEFAULT_FILENAMES = [
 #######################################
 # Helper Functions
 #######################################
-output_dir = "generated"
-os.makedirs(output_dir, exist_ok=True)  # Ensure the directory exists
+# output_dir = "generated"
+# os.makedirs(output_dir, exist_ok=True)  # Ensure the directory exists
 
 def show_step_status(filename: str, description: str, is_success: bool):
     """show_step_status shows a status message to the user about the current file"""
@@ -150,17 +150,17 @@ if __name__ == "__main__":
             # Transform ANTLR AST to Qafny AST
             transformer = ProgramTransformer()
             qafny_ast = transformer.visitProgram(ast)
-            print(qafny_ast)
+            rich.print(qafny_ast)
 
             collector = CollectKind()
             success = qafny_ast.accept(collector)
             kind_env = collector.get_kenv()
-            print(f"\n kind_env: {kind_env}")
+    #        print(f"\n kind_env: {kind_env}")
 
 
             if success:
                 kind_env = collector.get_kenv()
-                print(f"\n kind_env: {kind_env}")
+    #            print(f"\n kind_env: {kind_env}")
             else:
                 print(f"Verification failed: Variable used without definition or type mismatch. \n {success}")
 
@@ -169,7 +169,7 @@ if __name__ == "__main__":
             if args.mode == 'pbt':
                 res = compute_sp(qafny_ast, want_trace=True, want_discharge=True)
                 print("paths:", len(res.finals))
-                from sp_pretty import pp_vc, pp_discharge_result
+                from qsym.sp_pretty import pp_vc, pp_discharge_result
 
                 print(f"VCs: {len(res.vcs)}")
                 # for k, vc in enumerate(res.vcs, 1):

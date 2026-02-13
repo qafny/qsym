@@ -1,7 +1,7 @@
 from .AbstractProgramVisitor import AbstractProgramVisitor
 
 from qsym.parsers.qafny_parser import utils # for make_repr(...)
-#from utils import hasmembervariable
+from qsym.parsers.qafny_parser.utils import hasmembervariable
 
 from typing import (
     Callable,
@@ -9,7 +9,8 @@ from typing import (
     Tuple,
     Type,
     TypeVar,
-    Union
+    Union,
+    List
 )
 
 import antlr4 # for antlr4.tree.Tree.TerminalNodeImpl

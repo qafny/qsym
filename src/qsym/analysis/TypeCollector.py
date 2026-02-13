@@ -1,8 +1,8 @@
-import Programmer
-from ProgramVisitor import ProgramVisitor
-from CollectKind import *
+#from qsym.ast.Programmer import *
+from qsym.ast.ProgramVisitor import ProgramVisitor
+from qsym.analysis.CollectKind import *
 
-from TypeChecker import *
+from qsym.analysis.TypeChecker import *
 
 from antlr4.tree.Tree import TerminalNodeImpl
 

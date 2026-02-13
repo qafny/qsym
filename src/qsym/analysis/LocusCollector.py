@@ -1,6 +1,6 @@
-from src.qsym.ast import Programmer
-from src.qsym.ast import ProgramVisitor
-from src.qsym.ast.Programmer import *
+from qsym.ast import Programmer
+from qsym.ast import ProgramVisitor
+from qsym.ast.Programmer import *
 from .TypeChecker import *
 from .CollectKind import *
 

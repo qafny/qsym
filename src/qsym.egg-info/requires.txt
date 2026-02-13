@@ -3,6 +3,8 @@ antlr4-python3-runtime==4.9.2
 hypothesis>=6.125.3
 rich>=14.2.0
 sympy>=1.13.3
+qiskit>=2.3.0
+qiskit-aer>=0.17.2
 
 [dev]
 antlr4-tools>=0.2.1

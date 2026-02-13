@@ -2,7 +2,8 @@ LICENSE
 LICENSE.save0
 README.md
 pyproject.toml
-src/examples/runners/run_qafny_programs.py
+src/examples/qiskit/hamming_weight.py
+src/examples/runners/run_prog.py
 src/qsym/sp_calc.py
 src/qsym/sp_components.py
 src/qsym/sp_discharge.py
@@ -20,6 +21,7 @@ src/qsym/sp_z3.py
 src/qsym.egg-info/PKG-INFO
 src/qsym.egg-info/SOURCES.txt
 src/qsym.egg-info/dependency_links.txt
+src/qsym.egg-info/entry_points.txt
 src/qsym.egg-info/requires.txt
 src/qsym.egg-info/top_level.txt
 src/qsym/analysis/BindingCollector.py
@@ -33,11 +35,13 @@ src/qsym/analysis/TypeCollector.py
 src/qsym/ast/AbstractProgramVisitor.py
 src/qsym/ast/ProgramVisitor.py
 src/qsym/ast/Programmer.py
+src/qsym/parsers/py2qfy.py
 src/qsym/parsers/qafny_parser/ExpLexer.py
 src/qsym/parsers/qafny_parser/ExpListener.py
 src/qsym/parsers/qafny_parser/ExpParser.py
 src/qsym/parsers/qafny_parser/ExpVisitor.py
 src/qsym/parsers/qafny_parser/ProgramTransformer.py
+src/qsym/parsers/qafny_parser/utils.py
 src/tests/Pars_test.py
 src/tests/Test_ANTLR.py
 src/tests/Test_collect_kind_new.py

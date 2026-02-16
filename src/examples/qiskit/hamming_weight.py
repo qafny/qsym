@@ -4,9 +4,11 @@ from qiskit_aer import Aer
 import sys
 from qsym.parsers.qiskit_parser import transpile_qiskit_to_qafny_ast
 from qsym.ast.ProgramVisitor import ProgramVisitor
+from qsym.spec_api import *
 
 
-
+# check the functional of the function, check what they do on basis ket, 
+# and then we can translate it into qafny arithmetic, e.g. λ(x=>|x+1>)
 def make_inc_gate(n: int):
     """
     Gate INC_n: |x> -> |x+1 mod 2^n> on n qubits.
@@ -21,7 +23,7 @@ def make_inc_gate(n: int):
         controls = [target[k] for k in range(j)]
         qc.mcx(controls, target[j])
             
-    # The LSB always flips (toggle)
+    # The LSB always flips
     qc.x(target[0])
     
     return qc
@@ -40,6 +42,7 @@ def hamming_weight_circuit(n: int):
 
     # q[0,n) *= H;
     circuit.h(q)
+    qspec(f"assert {{q[0, {n}): en ↦ ∑ k ∈ [0, 2^{n}) . 1/sqrt(2^{n}) |k⟩ }};")
     circuit.barrier()
 
     # Build lambda gate once

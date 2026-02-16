@@ -1,9 +1,13 @@
 import ast
+import sys
+import rich
+from pathlib import Path
+from antlr4 import InputStream, CommonTokenStream  
+from qsym.parsers.qafny_parser.ExpLexer import ExpLexer  
+from qsym.parsers.qafny_parser.ExpParser import ExpParser 
+from qsym.parsers.qafny_parser.ProgramTransformer import ProgramTransformer 
 from qsym.ast.Programmer import *
 from qsym.sp_utils import _mk_num, _mk_bind,_mk_crange,_mk_call
-import sys
-from pathlib import Path
-import rich
 
 # Helper to create a Qafny Quantum Range: q[0, n)
 def _mk_qrange(q_name, start_val, end_var_name):
@@ -129,8 +133,80 @@ class PythonToQafny(ast.NodeVisitor):
         Translates expression statements like circuit.h(q)
         """
         if isinstance(node.value, ast.Call):
+            res = self._handle_qspec(node.value)
+            if res: return res 
             return self._handle_circuit_call(node.value)
         return None
+    
+    def _handle_qspec(self, call):
+        """
+        Translates: qspec("assert { ... }") -> QXAssert Node
+        """
+
+        func_name = getattr(call.func, 'id', '')
+            
+        if func_name != 'qspec':
+            return None
+
+        if not call.args: return None
+        arg = call.args[0]
+        
+        spec_str = self._extract_string_from_ast(arg)
+        
+        if spec_str is None:
+            print(f"Warning: qspec argument must be a string or f-string at line {call.lineno}")
+            return None
+        
+        try:
+            return self._parse_qafny_stmt(spec_str)
+        except Exception as e:
+            print(f"Error parsing Qafny spec at line {call.lineno}: {e}")
+            return None
+    
+
+    def _extract_string_from_ast(self, node):
+        """
+        Reconstructs a string from Constant, Str, or JoinedStr (f-string).
+        """
+        # Case 1: Simple String Literal ("foo")
+        if isinstance(node, ast.Constant) and isinstance(node.value, str):
+            return node.value 
+
+        # Case 2: F-String (f"foo {x}") -> JoinedStr
+        elif isinstance(node, ast.JoinedStr):
+            full_string = ""
+            for part in node.values:
+                if isinstance(part, ast.Constant):
+                    full_string += part.value
+                elif isinstance(part, ast.FormattedValue):
+                    if isinstance(part.value, ast.Name):
+                        full_string += part.value.id
+                    elif isinstance(part.value, ast.Constant):
+                        full_string += str(part.value.value)
+                    else:
+                        return None 
+            return full_string
+            
+        return None
+
+    def _parse_qafny_stmt(self, code: str):
+        """
+        Invokes the ANTLR parser on a string fragment.
+        """
+        input_stream = InputStream(code)
+        lexer = ExpLexer(input_stream)
+        stream = CommonTokenStream(lexer)
+        parser = ExpParser(stream)
+        
+        tree = parser.stmt()    
+        
+        if parser.getNumberOfSyntaxErrors() > 0:
+            raise ValueError(f"Syntax Error in qspec string: '{code}'")
+        
+        ast_builder = ProgramTransformer()
+        qx_node = ast_builder.visit(tree)
+        rich.print(f"\n check generated node: {qx_node}")
+        return qx_node
 
     def _handle_circuit_call(self, call):
         if not isinstance(call.func, ast.Attribute):
@@ -157,7 +233,8 @@ class PythonToQafny(ast.NodeVisitor):
             target = _resolve_exp(call.args[0])
             return QXQAssign(location=[target], exp=QXSingle("X"))
 
-        #need to translate to qxif
+        #1. translate to qxif, then we need to symbolic interpret the arithmetic at the low-level. 
+        #2. or we can simulate the whole block/function to test the property. 
         elif op == 'mcx':
             ctrls = _resolve_exp(call.args[0]) # e.g. "controls"
             targ = _resolve_exp(call.args[1])  # e.g. "target[j]"
@@ -175,37 +252,36 @@ class PythonToQafny(ast.NodeVisitor):
 
             loc = _mk_qrange(q_reg, 0, size)
             
-            # In your AST, QXMeasure takes ids (LHS variables) and locus (RHS qubits)
-            # We assume implicit return variable 'v' or 'res'
+            # QXMeasure takes ids (LHS variables) and locus (RHS qubits)
+            # return variable 'v' or 'res'
             return QXMeasure(
                 ids=[QXBind("v")], 
                 locus=[loc]
             )
 
-        # Case: circuit.append(c_inc, ...) -> Transformed to If + Gate
+        # circuit.append(c_inc_gate/c_xxx_gate, [q[i]] + list(p))
         elif op == 'append':
-            # Logic for: circuit.append(c_inc_gate, [q[i]] + list(p))
-            # Heuristic: Detect 'controlled' in name
+               
             gate_name = call.args[0].id
+            qubit_arg_node = call.args[1]
+            all_qubits = self._parse_append_args(qubit_arg_node)
+            if not all_qubits: return None
             
+            # Heuristic for control gate
             if "inc" in gate_name or "control" in gate_name:
-                # We need to extract the loop variable 'i' from arguments
-                # args[1] is the list of qubits. In Python AST this is complex.
-                # We will simplify and assume we are inside the 'for i' loop known context
-                # or just hardcode the transformation for this example.
-                
-                # Construct: if (q[i])
-                # QXQIndex(id='q', index=QXBind('i'))
-                condition = QXQIndex(id="q", index=QXBind("i"))
-                
-                # Construct Body: p *= INC
-                # Target p[0, n)
-                p_loc = _mk_qrange("p", 0, "n")
-                
+                #here we assume the last register is the target
+                tgt_node = all_qubits[-1]    # The last register (e.g., p)
+                ctrl_nodes = all_qubits[:-1] # Everything else (e.g., q[i])
+                if len(ctrl_nodes) == 1:
+                    condition = ctrl_nodes[0]
+                else:
+                    #simplied here, need some work
+                    condition = QXBoolLiteral(True)
+
                 # Operation: We map 'inc_gate' to a QXSingle op named "INC"
                 # (Since AST doesn't have a dedicated Lambda expression in QXExp yet)
                 inc_stmt = QXQAssign(
-                    location=[p_loc],
+                    location=[tgt_node],
                     exp=QXSingle(op="INC") 
                 )
                 
@@ -218,6 +294,135 @@ class PythonToQafny(ast.NodeVisitor):
                 
         return None
     
+    def _parse_append_args(self, arg_node):
+        
+        """
+        Parses the qubit argument of circuit.append().
+        Handles patterns like:
+          - [q[i]] + list(p)
+          - [q[0], p[1]]
+          - list(target)
+        
+        Returns a flat list of Qafny AST nodes (QXQIndex or QXQRange).
+        """
+        # Case 1: Concatenation (e.g., [q[i]] + list(p))
+        if isinstance(arg_node, ast.BinOp) and isinstance(arg_node.op, ast.Add):
+            left_qubits = self._parse_append_args(arg_node.left)
+            right_qubits = self._parse_append_args(arg_node.right)
+            return left_qubits + right_qubits
+
+        # Case 2: List Literal (e.g., [q[i]])
+        if isinstance(arg_node, ast.List):
+            qubits = []
+            for elt in arg_node.elts:
+                # elt is likely a Subscript (q[i]) or Name (q)
+                qubits.extend(self._parse_locus(elt)) # Reuse your existing _parse_locus
+            return qubits
+
+        # Case 3: 'list(p)' Call
+        if isinstance(arg_node, ast.Call) and getattr(arg_node.func, 'id', '') == 'list':
+            # Argument is the register name 'p'
+            reg_node = arg_node.args[0]
+            return self._parse_locus(reg_node)
+
+        # Case 4: Direct Register Reference (e.g. just 'p')
+        if isinstance(arg_node, ast.Name):
+             return self._parse_locus(arg_node)
+
+        return []
+
+
+    def _parse_locus(self, node):
+        """
+        Converts Python AST node (Name, Subscript, List) into a list of Qafny QXQRange.
+        
+        Handles:
+          - q        -> [QXQRange('q', crange=[0, size))]
+          - q[0]     -> [QXQRange('q', crange=[0, 1))]  (Single qubit range)
+          - q[i]     -> [QXQIndex('q', index=i)]        (Symbolic index)
+          - [q, p]   -> [QXQRange('q'...), QXQRange('p'...)]
+        """
+        
+        # Case A: Whole Register (e.g., 'q')
+        if isinstance(node, ast.Name):
+            name = node.id
+            # We look up the size from our symbol table, or default to 'n'
+            size = self.registers.get(name, "n") 
+            
+            # Return QXQRange for the whole register: q[0, size)
+            # QXCRange(left=0, right=size)
+            return [QXQRange(
+                location=name,
+                crange=QXCRange(left=QXNum(0), right=QXBind(size))
+            )]
+
+        # Case B: Single Qubit or Slice (e.g., 'q[0]', 'q[i]', 'q[0:2]')
+        elif isinstance(node, ast.Subscript):
+            if isinstance(node.value, ast.Name):
+                name = node.value.id
+                slice_node = node.slice
+                
+                # 1. Handle Slice: q[0:2] -> q[0, 2)
+                if isinstance(slice_node, ast.Slice):
+                    lower = self._extract_index_expr(slice_node.lower)
+                    upper = self._extract_index_expr(slice_node.upper)
+                    
+                    return [QXQRange(
+                        location=name,
+                        crange=QXCRange(left=lower, right=upper)
+                    )]
+                
+                # 2. Handle Index: q[i] or q[0]
+                # In Qafny, if we use it as a control (if q[i]), we want QXQIndex.
+                # If we use it as a target (q[i] *= X), we might want QXQRange of len 1.
+                
+                idx_expr = self._extract_index_expr(slice_node)
+                
+                # let's return a QXQIndex if it's symbolic 'i'
+                # or a Range [0, 1) if it's literal '0'.
+                # Actually, Qafny often treats q[i] as a range [i, i+1) for operations.
+                
+                # Let's return QXQIndex, which is valid for controls (Boolean).
+                # If used in an assignment, your visitor might need to wrap it in a range.
+                return [QXQIndex(id=name, index=idx_expr)]
+
+        # Case C: List Literal (e.g., [q, p])
+        elif isinstance(node, ast.List):
+            ranges = []
+            for item in node.elts:
+                ranges.extend(self._parse_locus(item))
+            return ranges
+
+        # Case D: Call to 'list(p)'
+        elif isinstance(node, ast.Call) and getattr(node.func, 'id', '') == 'list':
+             if node.args:
+                 return self._parse_locus(node.args[0])
+
+        return []
+
+    def _extract_index_expr(self, node):
+        """Helper to turn AST index/slice nodes into QX expressions (Num or Bind)."""
+        if node is None: 
+            return None # e.g. q[:n] -> lower is None
+            
+        # Literal Number: 0
+        if isinstance(node, ast.Constant): 
+            return QXNum(node.value)
+        # Variable: i
+        elif isinstance(node, ast.Name):
+            return QXBind(node.id)
+        # Binary Op: n - 1, i + 1 etc. 
+        elif isinstance(node, ast.BinOp):
+            # Recursively build QXBin expression
+            left = self._extract_index_expr(node.left)
+            right = self._extract_index_expr(node.right)
+            # Map Python ast.Add/Sub to string "+"/"-"
+            op_map = {ast.Add: "+", ast.Sub: "-", ast.Mult: "*", ast.Div: "/"}
+            op_str = op_map.get(type(node.op), "?")
+            return QXBin(op=op_str, left=left, right=right)
+            
+        return QXNum(0) # Fallback
+
 def main():
     import argparse
     parser = argparse.ArgumentParser(description="Transpile Qiskit/Python to Qafny AST.")

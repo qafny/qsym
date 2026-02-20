@@ -2,13 +2,13 @@ from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, transpile
 from qiskit.visualization import plot_histogram
 from qiskit_aer import Aer
 import sys
-from qsym.parsers.qiskit_parser import transpile_qiskit_to_qafny_ast
 from qsym.ast.ProgramVisitor import ProgramVisitor
 from qsym.spec_api import *
 
-
 # check the functional of the function, check what they do on basis ket, 
 # and then we can translate it into qafny arithmetic, e.g. λ(x=>|x+1>)
+
+@qlambda("x => |x + 1⟩")
 def make_inc_gate(n: int):
     """
     Gate INC_n: |x> -> |x+1 mod 2^n> on n qubits.
@@ -17,7 +17,7 @@ def make_inc_gate(n: int):
     target = QuantumRegister(n, 'targ')
     qc = QuantumCircuit(target, name="inc")
 
-    # Increment logic (Rippling carries from MSB down to 1)
+    # Increment logic 
     for j in range(n - 1, 0, -1):
         # Flip target[j] if all lower bits target[0]...target[j-1] are 1
         controls = [target[k] for k in range(j)]

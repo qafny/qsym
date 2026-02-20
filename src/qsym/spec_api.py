@@ -1,3 +1,18 @@
+from qsym.arith_pbt import run_pbt_veri
+
+def qlambda(math_spec: str, verify: bool = True):
+    """
+    Decorator to attach Qafny semantic meaning to a circuit factory.
+    Example: @qlambda("x => |x + 1⟩")
+    """
+    
+    def decorator(func):
+        func.__qsym_lambda__ = math_spec
+        if verify:
+            run_pbt_veri(func, math_spec)
+        return func
+    return decorator
+
 def qspec(spec: str):
     pass
 

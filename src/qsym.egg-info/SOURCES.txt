@@ -4,6 +4,7 @@ README.md
 pyproject.toml
 src/examples/qiskit/hamming_weight.py
 src/examples/runners/run_prog.py
+src/qsym/arith_pbt.py
 src/qsym/sp_calc.py
 src/qsym/sp_components.py
 src/qsym/sp_discharge.py
@@ -18,6 +19,7 @@ src/qsym/sp_state.py
 src/qsym/sp_terms.py
 src/qsym/sp_utils.py
 src/qsym/sp_z3.py
+src/qsym/spec_api.py
 src/qsym.egg-info/PKG-INFO
 src/qsym.egg-info/SOURCES.txt
 src/qsym.egg-info/dependency_links.txt

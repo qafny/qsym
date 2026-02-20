@@ -30,6 +30,8 @@ Run an example script:
 python src/examples/runners/run_prog.py Shors
 ```
 
+Run
+
 
 ## Repo Layout
 

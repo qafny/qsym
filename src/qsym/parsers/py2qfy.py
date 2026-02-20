@@ -42,40 +42,52 @@ class PythonToQafny(ast.NodeVisitor):
         self.methods = [] # List[QXMethod]
         self.registers = {} # Map[name -> size_str]
 
+        #symbol tables for semantics
+        self.known_functions = {} #maps function_name -> lambda string
+        self.gate_vars = {} #maps variable_name -> {"type": "base" |"ctrl", "lambda": str}
+
     def visit_FunctionDef(self, node: ast.FunctionDef):
         """
         Translates: def circuit(n: int)
-        Note: The hook MUST be named visit_FunctionDef
         """
         method_id = node.name
         bindings = []
+
+        # check for @qlambda decorators
+        for dec in node.decorator_list:
+            if isinstance(dec, ast.Call) and getattr(dec.func, 'id', '') == 'qlambda':
+                if dec.args:
+                    lambda_str = self._extract_string_from_ast(dec.args[0])
+                    self.known_functions[node.name] = lambda_str
+                return
         
-        # 1. Parse Arguments (e.g., n: int)
+        # parse args
         for arg in node.args.args:
             arg_name = arg.arg
             bindings.append(QXBind(arg_name, TySingle("nat")))
             self.registers['n_size'] = arg_name 
 
-        # 2. Pre-scan body for QuantumRegister declarations
+        # pre-scan body for QuantumRegister declarations
         body_stmts = []
         for stmt in node.body:
-            # Handle Assignments like: q = QuantumRegister(n, 'q')
+            # handle assignments like: q = QuantumRegister(n, 'q')
             if isinstance(stmt, ast.Assign) and isinstance(stmt.value, ast.Call):
                 func_id = getattr(stmt.value.func, 'id', '')
                 if func_id == 'QuantumRegister':
                     reg_name = stmt.targets[0].id
-                    # Get size (e.g., 'n' from QuantumRegister(n, ...))
+                    
+                    # get size of quantum register
                     size_arg = stmt.value.args[0]
                     size_id = size_arg.id if isinstance(size_arg, ast.Name) else str(size_arg.value)
                     
                     self.registers[reg_name] = size_id
                     
-                    # Add to bindings: q: Q[n]
+                    # add to bindings: q: Q[n]
                     q_type = TyQ(flag=QXBind(size_id))
                     bindings.append(QXBind(reg_name, q_type))
-                    continue # Skip adding the Qiskit assignment to Qafny body
+                    continue # skip adding the Qiskit assignment to Qafny body
             
-            # Visit other statements normally
+            # visit other stmts
             res = self.visit(stmt)
             if res:
                 if isinstance(res, list):
@@ -83,7 +95,7 @@ class PythonToQafny(ast.NodeVisitor):
                 else:
                     body_stmts.append(res)
         
-        # 3. Construct QXMethod
+        # construct QXMethod
         q_method = QXMethod(
             id=method_id,
             axiom=False,
@@ -94,6 +106,31 @@ class PythonToQafny(ast.NodeVisitor):
         )
         self.methods.append(q_method)
 
+    
+    def visit_Assign(self, node):
+        """Track which variables hold our semantic gates."""
+        if not isinstance(node.value, ast.Call):
+            return
+
+        # Case A: inc_gate = make_inc_gate(n)
+        func_name = getattr(node.value.func, 'id', '')
+        if func_name in self.known_functions:
+            lambda_str = self.known_functions[func_name]
+            for target in node.targets:
+                if isinstance(target, ast.Name):
+                    self.gate_vars[target.id] = {"type": "base", "lambda": lambda_str}
+
+        # Case B: c_inc_gate = inc_gate.control(1)
+        elif isinstance(node.value.func, ast.Attribute):
+            method_name = node.value.func.attr
+            base_var = getattr(node.value.func.value, 'id', '')
+            
+            if method_name == 'control' and base_var in self.gate_vars:
+                base_lambda = self.gate_vars[base_var]["lambda"]
+                for target in node.targets:
+                    if isinstance(target, ast.Name):
+                        self.gate_vars[target.id] = {"type": "ctrl", "lambda": base_lambda}
+    
     def visit_For(self, node: ast.For):
         """
         Translates: for i in range(n) -> QXFor
@@ -168,11 +205,11 @@ class PythonToQafny(ast.NodeVisitor):
         """
         Reconstructs a string from Constant, Str, or JoinedStr (f-string).
         """
-        # Case 1: Simple String Literal ("foo")
+        # Case 1: string literal ("foo")
         if isinstance(node, ast.Constant) and isinstance(node.value, str):
             return node.value 
 
-        # Case 2: F-String (f"foo {x}") -> JoinedStr
+        # Case 2: f-string (f"foo {x}") -> JoinedStr
         elif isinstance(node, ast.JoinedStr):
             full_string = ""
             for part in node.values:
@@ -207,6 +244,21 @@ class PythonToQafny(ast.NodeVisitor):
         qx_node = ast_builder.visit(tree)
         rich.print(f"\n check generated node: {qx_node}")
         return qx_node
+    
+    def _parse_qafny_exp(self, code: str):
+        """Parses a Qafny expression string into a QXExp node (like QXOracle)."""
+        input_stream = InputStream(code)
+        lexer = ExpLexer(input_stream)
+        stream = CommonTokenStream(lexer)
+        parser = ExpParser(stream)
+        
+        tree = parser.expr() 
+        ast_builder = ProgramTransformer()
+        
+        if parser.getNumberOfSyntaxErrors() > 0:
+            raise ValueError(f"Syntax Error parsing oracle lambda: '{code}'")
+
+        return ast_builder.visit(tree)
 
     def _handle_circuit_call(self, call):
         if not isinstance(call.func, ast.Attribute):
@@ -220,7 +272,6 @@ class PythonToQafny(ast.NodeVisitor):
             size = self.registers.get(reg_name, 'n')
             
             # QXQAssign(location=[QXQRange], exp=QXSingle('H'))
-            # location is a list of QXQRange
             loc = _mk_qrange(reg_name, 0, size)
             
             return QXQAssign(
@@ -261,31 +312,64 @@ class PythonToQafny(ast.NodeVisitor):
 
         # circuit.append(c_inc_gate/c_xxx_gate, [q[i]] + list(p))
         elif op == 'append':
-               
-            gate_name = call.args[0].id
+            gate_var_name = getattr(call.args[0], 'id', '')
             qubit_arg_node = call.args[1]
             all_qubits = self._parse_append_args(qubit_arg_node)
+            
             if not all_qubits: return None
             
-            # Heuristic for control gate
-            if "inc" in gate_name or "control" in gate_name:
-                #here we assume the last register is the target
-                tgt_node = all_qubits[-1]    # The last register (e.g., p)
-                ctrl_nodes = all_qubits[:-1] # Everything else (e.g., q[i])
+            # Look up the gate in our Symbol Table Memory
+            if gate_var_name in getattr(self, 'gate_vars', {}):
+                gate_info = self.gate_vars[gate_var_name]
+                
+                # Extract the math
+                lambda_str = gate_info["lambda"]
+                is_controlled = (gate_info["type"] == "ctrl")
+                
+                # Create the Qafny lambda expression dynamically
+                try:
+                    qafny_oracle_node = self._parse_qafny_exp(f"λ({lambda_str})")
+                except Exception as e:
+                    print(f"Error parsing oracle at line {call.lineno}: {e}")
+                    return None
+
+                if is_controlled:
+                    # It's a controlled gate (e.g., c_inc_gate)
+                    tgt_node = all_qubits[-1]    # Assume last is target
+                    ctrl_nodes = all_qubits[:-1] # Everything else is control
+                    condition = ctrl_nodes[0] if len(ctrl_nodes) == 1 else QXBoolLiteral(True)
+
+                    inc_stmt = QXQAssign(
+                        location=[tgt_node],
+                        exp=qafny_oracle_node
+                    )
+                    
+                    return QXIf(
+                        bexp=condition,
+                        stmts=[inc_stmt],
+                        else_branch=[]
+                    )
+                else:
+                    return QXQAssign(
+                        location=all_qubits,
+                        exp=qafny_oracle_node
+                    )
+
+            # --- FALLBACK: Standard Heuristics ---
+            elif "inc" in gate_var_name or "control" in gate_var_name:
+                tgt_node = all_qubits[-1]    
+                ctrl_nodes = all_qubits[:-1] 
+                
                 if len(ctrl_nodes) == 1:
                     condition = ctrl_nodes[0]
                 else:
-                    #simplied here, need some work
                     condition = QXBoolLiteral(True)
 
-                # Operation: We map 'inc_gate' to a QXSingle op named "INC"
-                # (Since AST doesn't have a dedicated Lambda expression in QXExp yet)
                 inc_stmt = QXQAssign(
                     location=[tgt_node],
-                    exp=QXSingle(op="INC") 
+                    exp=QXSingle(op="INC") # Hardcoded fallback
                 )
                 
-                # Return QXIf
                 return QXIf(
                     bexp=condition,
                     stmts=[inc_stmt],
@@ -425,11 +509,17 @@ class PythonToQafny(ast.NodeVisitor):
 
 def main():
     import argparse
+    import importlib.util
+    import sys
+    import ast
+    from pathlib import Path
+    import rich
+
     parser = argparse.ArgumentParser(description="Transpile Qiskit/Python to Qafny AST.")
     parser.add_argument("filename", help="Filename in examples/qiskit/ or full path to .py file")
     args = parser.parse_args()
 
-    # 1. Resolve Path
+    # Resolve Path
     target_path = Path(args.filename)
     
     if not target_path.exists():
@@ -452,8 +542,27 @@ def main():
         rich.print(f"[bold red]Error:[/] File not found: {args.filename}")
         sys.exit(1)
 
-    # 2. Parse and Transpile
+    # Parse and Transpile
     rich.print(f"[bold blue]Transpiling:[/] [white]{target_path}[/]")
+
+    #trigger PBT if @qlambda is used.
+    try:
+        module_name = target_path.stem
+        spec = importlib.util.spec_from_file_location(module_name, target_path)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[module_name] = module
+        
+        # This executes the file. If @qlambda fails Hypothesis PBT
+        spec.loader.exec_module(module)
+        rich.print("[bold green]Verification Passed! No contract violations.[/]\n")
+        
+    except Exception as e:
+        rich.print(f"[bold red]Verification Failed: Circuit violates @qlambda contract.[/]")
+        import traceback
+        traceback.print_exc()
+        sys.exit(1) 
+    
+    #Transpilation
     try:
         source = target_path.read_text()
         py_ast = ast.parse(source)
@@ -461,7 +570,7 @@ def main():
         transpiler = PythonToQafny()
         transpiler.visit(py_ast)
 
-        # 3. Output
+        # Output
         if not transpiler.methods:
             rich.print("[yellow]No methods were generated. Check your visitor hooks.[/]")
         else:

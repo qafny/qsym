@@ -1099,8 +1099,11 @@ class ProgramTransformer(ExpVisitor):
         # with multiple q-states, create multiple Kets, return as list
         if len(ctx.qstate()) > 0:
             kets = []
+
+            #TODO unsure if this is the best way to handle negative kets, but it works for now
+            is_negative = (ctx.getChild(0).getText() == '-')
             for qstate in ctx.qstate():
-                kets.append(QXSKet(self.visitQstate(qstate), qstate, line_number=ctx.start.line))
+                kets.append(QXSKet(self.visitQstate(qstate), negative=is_negative, line_number=ctx.start.line))
             return kets
         elif ctx.arithAtomic() is not None:
             return [QXVKet(self.visitArithAtomic(ctx.arithAtomic()), line_number=ctx.start.line)]

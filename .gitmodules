@@ -1,0 +1,3 @@
+[submodule "vendor/quantumTesting"]
+	path = vendor/quantumTesting
+	url = https://github.com/qafny/quantumTesting.git

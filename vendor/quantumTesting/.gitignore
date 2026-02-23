@@ -1,0 +1,15 @@
+.hypothesis/
+AST_Scripts/__pycache__/
+qiskit-to-xmlprogrammer/__pycache__/
+*.aux
+*.cache
+*.glob
+*.vo
+*.vok
+*.vos
+.CoqMakefile.d
+CoqMakefile
+CoqMakefile.conf
+bin/*
+lib/*
+*.pyc 

@@ -1,0 +1,10 @@
+{
+  "circuit_name": "NLocal_2",
+  "class_name": "NLocal",
+  "module": "qiskit.circuit.library.n_local.n_local",
+  "description": "The n-local circuit class.\n\n    The structure of the n-local circuit are alternating rotation and entanglement layers.\n    In both layers, parameterized circuit-blocks act on the circuit in a defined way.\n    In the rotation layer, the blocks are applied stacked on top of each other, while in the\n    entanglement layer according to the ``entanglement`` strategy.\n    The circuit blocks can have arbitrary sizes (smaller equal to the number of qubits in the\n    circuit). Each layer is repeated ``re",
+  "num_qubits": 2,
+  "num_clbits": 0,
+  "specification": "\nCircuit: NLocal_2\nQubits: 2\nClassical bits: 0\nDepth: 1\nSize: 1\n\nExpected Behavior:\n- Circuit should compile to XMLProgrammer AST without errors\n- AST should be valid according to SimulatorValidator\n- Simulator should execute without runtime errors\n- Output state should be consistent with circuit semantics\n",
+  "expected_behavior": "Circuit from NLocal class"
+}

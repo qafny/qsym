@@ -1,0 +1,10 @@
+{
+  "circuit_name": "IntegerComparator_2",
+  "class_name": "IntegerComparator",
+  "module": "qiskit.circuit.library.arithmetic.integer_comparator",
+  "description": "Integer Comparator.\n\n    Operator compares basis states :math:`|i\\rangle_n` against a classically given integer\n    :math:`L` of fixed value and flips a target qubit if :math:`i \\geq L`\n    (or :math:`<` depending on the parameter ``geq``):\n\n    .. math::\n\n        |i\\rangle_n |0\\rangle \\mapsto |i\\rangle_n |i \\geq L\\rangle\n\n    This operation is based on two's complement implementation of binary subtraction but only\n    uses carry bits and no actual result bits. If the most significant carry bit\n",
+  "num_qubits": 4,
+  "num_clbits": 0,
+  "specification": "\nCircuit: IntegerComparator_2\nQubits: 4\nClassical bits: 0\nDepth: 1\nSize: 1\n\nExpected Behavior:\n- Circuit should compile to XMLProgrammer AST without errors\n- AST should be valid according to SimulatorValidator\n- Simulator should execute without runtime errors\n- Output state should be consistent with circuit semantics\n",
+  "expected_behavior": "Circuit from IntegerComparator class"
+}

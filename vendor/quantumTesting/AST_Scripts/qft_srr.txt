@@ -1,0 +1,2 @@
+//The function minus 2^(n-1-10) to x's array, where n is the number of qubits in x.
+<pexp gate = 'QFT' > <id> x </id>  <vexp> 0 </vexp> </pexp> <pexp gate = 'SR' > < vexp> -10 </vexp> <id> x </id> </pexp> <pexp gate = 'RQFT' > <id> x </id>  <vexp> 0 </vexp> </pexp> 

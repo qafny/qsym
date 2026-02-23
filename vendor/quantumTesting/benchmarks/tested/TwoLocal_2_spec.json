@@ -1,0 +1,10 @@
+{
+  "circuit_name": "TwoLocal_2",
+  "class_name": "TwoLocal",
+  "module": "qiskit.circuit.library.n_local.two_local",
+  "description": "The two-local circuit.\n\n    The two-local circuit is a parameterized circuit consisting of alternating rotation layers and\n    entanglement layers. The rotation layers are single qubit gates applied on all qubits.\n    The entanglement layer uses two-qubit gates to entangle the qubits according to a strategy set\n    using ``entanglement``. Both the rotation and entanglement gates can be specified as\n    string (e.g. ``'ry'`` or ``'cx'``), as gate-type (e.g. ``RYGate`` or ``CXGate``) or\n    as Qua",
+  "num_qubits": 2,
+  "num_clbits": 0,
+  "specification": "\nCircuit: TwoLocal_2\nQubits: 2\nClassical bits: 0\nDepth: 1\nSize: 1\n\nExpected Behavior:\n- Circuit should compile to XMLProgrammer AST without errors\n- AST should be valid according to SimulatorValidator\n- Simulator should execute without runtime errors\n- Output state should be consistent with circuit semantics\n",
+  "expected_behavior": "Circuit from TwoLocal class"
+}

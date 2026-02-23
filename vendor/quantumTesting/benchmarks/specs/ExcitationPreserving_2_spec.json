@@ -1,0 +1,10 @@
+{
+  "circuit_name": "ExcitationPreserving_2",
+  "class_name": "ExcitationPreserving",
+  "module": "qiskit.circuit.library.n_local.excitation_preserving",
+  "description": "The heuristic excitation-preserving wave function ansatz.\n\n    The ``ExcitationPreserving`` circuit preserves the ratio of :math:`|00\\rangle`,\n    :math:`|01\\rangle + |10\\rangle` and :math:`|11\\rangle` states. To this end, this circuit\n    uses two-qubit interactions of the form\n\n    .. math::\n\n        \\newcommand{\\rotationangle}{\\theta/2}\n\n        \\begin{pmatrix}\n        1 & 0 & 0 & 0 \\\\\n        0 & \\cos\\left(\\rotationangle\\right) & -i\\sin\\left(\\rotationangle\\right) & 0 \\\\\n        0 & -i\\sin\\le",
+  "num_qubits": 2,
+  "num_clbits": 0,
+  "specification": "\nCircuit: ExcitationPreserving_2\nQubits: 2\nClassical bits: 0\nDepth: 1\nSize: 1\n\nExpected Behavior:\n- Circuit should compile to XMLProgrammer AST without errors\n- AST should be valid according to SimulatorValidator\n- Simulator should execute without runtime errors\n- Output state should be consistent with circuit semantics\n",
+  "expected_behavior": "Circuit from ExcitationPreserving class"
+}

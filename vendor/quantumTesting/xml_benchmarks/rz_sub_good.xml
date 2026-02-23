@@ -1,0 +1,19 @@
+<root>
+<let id = "f" > <vexp op = "id" > x </vexp> <vexp op = "id" > n </vexp> <vexp op = "id" > size </vexp> <vexp op = "id" > M </vexp> 
+   <match id = "n" >
+          <pair case = "0" > <pexp gate = "SKIP" id = "x" > <vexp op = "num" > 0 </vexp> </pexp> </pair>
+           <pair case = "m" >
+                  <app id = "f" > <vexp op = "id" > x </vexp> <vexp op = "id" > m </vexp> <vexp op = "id" > size </vexp> <vexp op = "id" > M </vexp> </app>
+                  <if> <vexp op = "$" > <vexp op = "id" > M </vexp> <vexp op = "id" > m </vexp> </vexp>
+                      <root> <pexp gate = "SR" id = "x" > <vexp op = "-" > <vexp op = "id" > m </vexp> <vexp op = "id" > size </vexp> </vexp> </pexp> </root>
+                      <root> <pexp gate = "SKIP" id = "x" > <vexp op = "id" > m </vexp> </pexp> </root>
+                 </if>
+           </pair>   
+   </match>
+</let>
+<pexp gate = "QFT" id = "x" > <vexp op = "num" > 0 </vexp> </pexp> 
+<app id = "f" > <vexp op = "id" > x </vexp> <vexp op = "id" > na </vexp> <vexp op = "id" > na </vexp> <vexp op = "id" > m </vexp> </app> 
+<pexp gate = "RQFT" id = "x" > </pexp>
+    <data> <tuple id = "x" > <type> Phi </type> <size> n </size> </tuple> </data>
+    <data> <tuple id = "f" > <type> Fun </type> <size> n </size> </tuple>  </data>
+</root>

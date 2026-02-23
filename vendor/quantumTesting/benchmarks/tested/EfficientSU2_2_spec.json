@@ -1,0 +1,10 @@
+{
+  "circuit_name": "EfficientSU2_2",
+  "class_name": "EfficientSU2",
+  "module": "qiskit.circuit.library.n_local.efficient_su2",
+  "description": "The hardware efficient SU(2) 2-local circuit.\n\n    The ``EfficientSU2`` circuit consists of layers of single qubit operations spanned by SU(2)\n    and :math:`CX` entanglements. This is a heuristic pattern that can be used to prepare trial wave\n    functions for variational quantum algorithms or classification circuit for machine learning.\n\n    SU(2) stands for special unitary group of degree 2, its elements are :math:`2 \\times 2`\n    unitary matrices with determinant 1, such as the Pauli rotatio",
+  "num_qubits": 2,
+  "num_clbits": 0,
+  "specification": "\nCircuit: EfficientSU2_2\nQubits: 2\nClassical bits: 0\nDepth: 1\nSize: 1\n\nExpected Behavior:\n- Circuit should compile to XMLProgrammer AST without errors\n- AST should be valid according to SimulatorValidator\n- Simulator should execute without runtime errors\n- Output state should be consistent with circuit semantics\n",
+  "expected_behavior": "Circuit from EfficientSU2 class"
+}

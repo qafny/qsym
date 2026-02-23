@@ -1,0 +1,4 @@
+// result should be x[0] becomes not x[0], rotate y's global phase to add 2^10.
+//X (x,0) ; CU (y,0) (RZ 10 (y,1)) 
+
+<pexp gate = 'X' > <id> x </id>  <vexp> 0 </vexp> </pexp> <pexp gate = 'CU' > <id> x </id> < vexp> 0 </vexp>  <pexp gate = 'RZ' > <vexp> 10 </vexp> <id> y </id>  <vexp> 1 </vexp> </pexp>  </pexp> 

@@ -1,0 +1,58 @@
+<root>
+<let id = "adder" > <vexp op = "id" type = "Nat" rec = "adder"> n </vexp> <vexp op = "id" type = "Nat" > size </vexp>
+    <vexp op = "id" type = "Nat" > M </vexp>
+                <qvexp op = "id" type = "Phi(size, size)" > x </qvexp>
+   <match id = "n" >
+          <pair case = "0" >  <pexp gate = "SKIP" id = "x" > <vexp op = "num" > 0 </vexp> </pexp> </pair>
+           <pair case = "m" >
+                  <app id = "adder" >  <vexp op = "id" > m </vexp> <vexp op = "id" > size </vexp> <vexp op = "id" > M </vexp> <qvexp op = "id" > x </qvexp> </app>
+                  <if> <vexp op = "$" > <vexp op = "id" > M </vexp> <vexp op = "id" > m </vexp> </vexp>
+                      <next> <pexp gate = "SR" id = "x" > <vexp op = "-" > <vexp op = "id" > size </vexp> <vexp op = "id" > m </vexp> </vexp> </pexp> </next>
+                      <next> <pexp gate = "SKIP" id = "x" > <vexp op = "id" > m </vexp> </pexp> </next>
+                 </if>
+           </pair>
+   </match>
+</let>
+
+<let id = "sub" > <vexp op = "id" type = "Nat" rec = "sub"> n </vexp> <vexp op = "id" type = "Nat" > size </vexp>
+    <vexp op = "id" type = "Nat" > M </vexp>
+                <qvexp op = "id" type = "Phi(size, size)" > x </qvexp>
+   <match id = "n" >
+          <pair case = "0" >  <pexp gate = "SKIP" id = "x" > <vexp op = "num" > 0 </vexp> </pexp> </pair>
+           <pair case = "m" >
+                  <app id = "sub" >  <vexp op = "id" > m </vexp> <vexp op = "id" > size </vexp> <vexp op = "id" > M </vexp> <qvexp op = "id" > x </qvexp> </app>
+                  <if> <vexp op = "$" > <vexp op = "id" > M </vexp> <vexp op = "id" > m </vexp> </vexp>
+                      <next> <pexp gate = "SR" id = "x" > <vexp op = "-" > <vexp op = "id" > m </vexp> <vexp op = "id" > size </vexp> </vexp> </pexp> </next>
+                      <next> <pexp gate = "SKIP" id = "x" > <vexp op = "id" > m </vexp> </pexp> </next>
+                 </if>
+           </pair>
+   </match>
+</let>
+
+<let id = "f" > <vexp op = "id" type = "Nat" > n </vexp> <vexp op= "id" type = "Nat" > a </vexp> <vexp op = "id" type = "Nat" > m </vexp>  <qvexp op = "id" type = "Nor(1)" > c </qvexp> <qvexp op = "id" type = "Phi(size, size)"  > x </qvexp>
+  <app id = "adder" > <vexp op = "id" > n </vexp> <vexp op = "id" > n </vexp> <vexp op = "id" > a </vexp> <qvexp op = "id" > x </qvexp>  </app>
+      <app id = "sub" > <vexp op = "id" > n </vexp> <vexp op = "id" > n </vexp> <vexp op = "id" > m </vexp> <qvexp op = "id" > x </qvexp>  </app>
+    <pexp gate = "RQFT" id = "x" > </pexp>
+        <pexp gate = "CU" id = "x" > 
+         <vexp op = "-" > <vexp op = "id" > n </vexp> <vexp op = "num" > 1 </vexp> </vexp> 
+            <pexp gate = "X" id = "c" > <vexp op = "num" > 0 </vexp> </pexp></pexp>
+    <pexp gate = "QFT" id = "x" > <vexp op = "num" > 0 </vexp> </pexp>
+    <pexp gate = "CU" id = "c" > <vexp op = "num" > 0 </vexp> 
+      <app id = "adder" > <vexp op = "id" > n </vexp> <vexp op = "id" > n </vexp> <vexp op = "id" > m </vexp> <qvexp op = "id" > x </qvexp> </app> </pexp>
+    <app id = "sub" > <vexp op = "id" > n </vexp> <vexp op = "id" > n </vexp> <vexp op = "id" > m </vexp>  <qvexp op = "id" > x </qvexp> </app>
+    <pexp gate = "RQFT" id = "x" > </pexp>
+    <pexp gate = "X" id = "x" >
+         <vexp op = "-" > <vexp op = "id" > n </vexp> <vexp op = "num" > 1 </vexp> </vexp> </pexp>
+        <pexp gate = "CU" id = "x" > 
+            <vexp op = "-" > <vexp op = "id" > n </vexp> <vexp op = "num"> 1 </vexp> </vexp> 
+                <pexp gate = "X" id = "c" > <vexp op = "num" > 0 </vexp> </pexp></pexp>
+     <pexp gate = "X" id = "x" >
+        <vexp op = "-" > <vexp op = "id" > n </vexp> <vexp op = "num" > 1 </vexp> </vexp> </pexp>
+    <pexp gate = "QFT" id = "x" > <vexp op = "num" > 0 </vexp> </pexp>
+    <app id = "adder" >  <vexp op = "id" > n </vexp>  <vexp op = "id" > n </vexp>  <vexp op = "id" > m </vexp> <qvexp op = "id" > x </qvexp>  </app>
+</let>
+
+<pexp gate = "QFT" id = "x" > <vexp op = "num" > 0 </vexp> </pexp> 
+<app id = "f" > <vexp op = "id" > na </vexp> <vexp op = "id" > a </vexp> <vexp op = "id" > m </vexp> <qvexp op = "id" type = "Nor(1)" > c </qvexp> <qvexp op = "id" type = "Phi(size, size)"  > x </qvexp> </app>
+<pexp gate = "RQFT" id = "x" > </pexp>
+</root>

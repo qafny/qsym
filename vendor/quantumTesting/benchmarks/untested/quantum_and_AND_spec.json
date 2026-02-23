@@ -1,0 +1,10 @@
+{
+  "circuit_name": "quantum_and_AND",
+  "class_name": "AND",
+  "module": "qiskit.circuit.library.boolean_logic.quantum_and",
+  "description": "A circuit implementing the logical AND operation on a number of qubits.\n\n    For the AND operation the state :math:`|1\\rangle` is interpreted as ``True``. The result\n    qubit is flipped, if the state of all variable qubits is ``True``. In this format, the AND\n    operation equals a multi-controlled X gate, which is controlled on all variable qubits.\n    Using a list of flags however, qubits can be skipped or negated. Practically, the flags\n    allow to skip controls or to apply pre- and post-X gates to the negated qubits.\n\n    The AND gate without special flags equals the multi-controlled-X gate:\n\n    .. plot::\n       :alt: Diagram illustrating the previously described circuit.\n\n       from qiskit.circuit.library import AND\n       from qiskit.visualization.library import _generate_circuit_library_visualization\n       circuit = AND(5)\n       _generate_circuit_library_visualization(circuit)\n\n    Using flags we can negate qubits or skip them. For instance, if we have 5 qubits and want to\n    return ``True`` if the first qubit is ``False`` and the last two are ``True`` we use the flags\n    ``[-1, 0, 0, 1, 1]``.\n\n    .. plot::\n       :alt: Diagram illustrating the previously described circuit.\n\n       from qiskit.circuit.library import AND\n       from qiskit.visualization.library import _generate_circuit_library_visualization\n       circuit = AND(5, flags=[-1, 0, 0, 1, 1])\n       _generate_circuit_library_visualization(circuit)\n\n    ",
+  "num_qubits": 3,
+  "num_clbits": 0,
+  "specification": "\nCircuit: quantum_and_AND\nQubits: 3\nClassical bits: 0\nDepth: 1\nSize: 1\n\nExpected Behavior:\n- Circuit should compile to XMLProgrammer AST without errors\n- AST should be valid according to SimulatorValidator\n- Simulator should execute without runtime errors\n- Output state should be consistent with circuit semantics\n",
+  "expected_behavior": "Circuit-specific quantum operation"
+}

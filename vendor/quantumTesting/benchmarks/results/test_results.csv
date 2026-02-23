@@ -1,0 +1,281 @@
+timestamp,circuit_name,class_name,module,num_qubits,status,error_type,error_classification,error_details,notes,full_error
+2026-01-24T16:56:44.099226,,AND,qiskit.circuit.library.boolean_logic.quantum_and,,FAILED,INSTANTIATION_ERROR,FRAMEWORK_LIMITATION,Cannot instantiate circuit with default parameters,Circuit requires non-default parameters or special handling,Unknown instantiation error
+2026-01-24T16:56:44.100278,,BlueprintCircuit,qiskit.circuit.library.blueprintcircuit,,FAILED,INSTANTIATION_ERROR,FRAMEWORK_LIMITATION,Cannot instantiate circuit with default parameters,Circuit requires non-default parameters or special handling,Unknown instantiation error
+2026-01-24T16:56:44.100391,CDKMRippleCarryAdder_2,CDKMRippleCarryAdder,qiskit.circuit.library.arithmetic.adders.cdkm_ripple_carry_adder,6,FAILED,AST_GENERATION_ERROR,FRAMEWORK_LIMITATION,QCtoXMLProgrammer failed: [Errno 32] Broken pipe,AST generation: FAILED; ,"Traceback (most recent call last):
+  File ""/home/bardcs-01/Documents/quantumTesting/benchmarks/test_all_benchmarks.py"", line 204, in test_circuit
+    ast_tree = self.visitor.startVisit(
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 88, in startVisit
+    print(self.program)
+BrokenPipeError: [Errno 32] Broken pipe
+"
+2026-01-24T16:56:44.223892,,Diagonal,qiskit.circuit.library.generalized_gates.diagonal,,FAILED,INSTANTIATION_ERROR,FRAMEWORK_LIMITATION,Cannot instantiate circuit with default parameters,Circuit requires non-default parameters or special handling,Unknown instantiation error
+2026-01-24T16:56:44.224171,DraperQFTAdder_2,DraperQFTAdder,qiskit.circuit.library.arithmetic.adders.draper_qft_adder,4,PASSED,N/A,N/A,N/A,AST generation: SUCCESS; AST validation: SUCCESS; Simulation: SUCCESS,N/A
+2026-01-24T16:56:44.270067,EfficientSU2_2,EfficientSU2,qiskit.circuit.library.n_local.efficient_su2,2,FAILED,AST_GENERATION_ERROR,FRAMEWORK_LIMITATION,QCtoXMLProgrammer failed: 'QXRY' object has no attribute 'angle',AST generation: FAILED; ,"Traceback (most recent call last):
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 179, in nodeToXMLProgrammer
+    float(exp.num().num())
+TypeError: Parameter expression with unbound parameters {Symbol { name: ""θ"", uuid: 4eea2e8a-bcfc-44d4-83b4-ce38ca78d009, index: Some(0), vector: Some(Py(0x7088e80e5f00)) }} is not numeric.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File ""/home/bardcs-01/Documents/quantumTesting/benchmarks/test_all_benchmarks.py"", line 204, in test_circuit
+    ast_tree = self.visitor.startVisit(
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 84, in startVisit
+    self.visitNode(startingNode)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 108, in visitNode
+    self.visitNode(successor)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 106, in visitNode
+    self.nodeToXMLProgrammer(node)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 181, in nodeToXMLProgrammer
+    raise TypeError(""Error: An unset external parameter in a parameterised circuit was found. From gate: "" + str(node.name) + "" with angle: "" + str(exp.angle) + "". Please bind all parameters before compiling to XMLProgrammer."")
+                                                                                                                                                    ^^^^^^^^^
+AttributeError: 'QXRY' object has no attribute 'angle'
+"
+2026-01-24T16:56:44.295728,EvolvedOperatorAnsatz_2,EvolvedOperatorAnsatz,qiskit.circuit.library.n_local.evolved_operator_ansatz,0,FAILED,UNEXPECTED_ERROR,UNKNOWN,Unexpected error: The operators are not set.,Unexpected error occurred: The operators are not set.,"Traceback (most recent call last):
+  File ""/home/bardcs-01/Documents/quantumTesting/benchmarks/test_all_benchmarks.py"", line 196, in test_circuit
+    spec = self.create_specification(circuit_info, circuit)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/home/bardcs-01/Documents/quantumTesting/benchmarks/test_all_benchmarks.py"", line 150, in create_specification
+    Depth: {circuit.depth()}
+            ^^^^^^^^^^^^^^^
+  File ""/home/bardcs-01/.local/lib/python3.12/site-packages/qiskit/circuit/library/blueprintcircuit.py"", line 263, in depth
+    self._build()
+  File ""/home/bardcs-01/.local/lib/python3.12/site-packages/qiskit/circuit/library/n_local/evolved_operator_ansatz.py"", line 457, in _build
+    self._check_configuration()
+  File ""/home/bardcs-01/.local/lib/python3.12/site-packages/qiskit/circuit/library/n_local/evolved_operator_ansatz.py"", line 346, in _check_configuration
+    raise ValueError(""The operators are not set."")
+ValueError: The operators are not set.
+"
+2026-01-24T16:56:44.297775,,ExactReciprocal,qiskit.circuit.library.arithmetic.exact_reciprocal,,FAILED,INSTANTIATION_ERROR,FRAMEWORK_LIMITATION,Cannot instantiate circuit with default parameters,Circuit requires non-default parameters or special handling,Unknown instantiation error
+2026-01-24T16:56:44.298073,ExcitationPreserving_2,ExcitationPreserving,qiskit.circuit.library.n_local.excitation_preserving,2,FAILED,AST_GENERATION_ERROR,FRAMEWORK_LIMITATION,QCtoXMLProgrammer failed: [Errno 32] Broken pipe,AST generation: FAILED; ,"Traceback (most recent call last):
+  File ""/home/bardcs-01/Documents/quantumTesting/benchmarks/test_all_benchmarks.py"", line 204, in test_circuit
+    ast_tree = self.visitor.startVisit(
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 84, in startVisit
+    self.visitNode(startingNode)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 108, in visitNode
+    self.visitNode(successor)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 106, in visitNode
+    self.nodeToXMLProgrammer(node)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 116, in nodeToXMLProgrammer
+    print('inputBits', inputBits)
+BrokenPipeError: [Errno 32] Broken pipe
+"
+2026-01-24T16:56:44.324947,,FourierChecking,qiskit.circuit.library.fourier_checking,,FAILED,INSTANTIATION_ERROR,FRAMEWORK_LIMITATION,Cannot instantiate circuit with default parameters,Circuit requires non-default parameters or special handling,Unknown instantiation error
+2026-01-24T16:56:44.326505,HRSCumulativeMultiplier_2,HRSCumulativeMultiplier,qiskit.circuit.library.arithmetic.multipliers.hrs_cumulative_multiplier,7,FAILED,AST_GENERATION_ERROR,FRAMEWORK_LIMITATION,QCtoXMLProgrammer failed: [Errno 32] Broken pipe,AST generation: FAILED; ,"Traceback (most recent call last):
+  File ""/home/bardcs-01/Documents/quantumTesting/benchmarks/test_all_benchmarks.py"", line 204, in test_circuit
+    ast_tree = self.visitor.startVisit(
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 84, in startVisit
+    self.visitNode(startingNode)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 108, in visitNode
+    self.visitNode(successor)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 108, in visitNode
+    self.visitNode(successor)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 108, in visitNode
+    self.visitNode(successor)
+  [Previous line repeated 27 more times]
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 106, in visitNode
+    self.nodeToXMLProgrammer(node)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 116, in nodeToXMLProgrammer
+    print('inputBits', inputBits)
+BrokenPipeError: [Errno 32] Broken pipe
+"
+2026-01-24T16:56:44.442972,InnerProduct_2,InnerProduct,qiskit.circuit.library.boolean_logic.inner_product,4,PASSED,N/A,N/A,N/A,AST generation: SUCCESS; AST validation: SUCCESS; Simulation: SUCCESS,N/A
+2026-01-24T16:56:44.462307,IntegerComparator_2,IntegerComparator,qiskit.circuit.library.arithmetic.integer_comparator,4,PASSED,N/A,N/A,N/A,AST generation: SUCCESS; AST validation: SUCCESS; Simulation: SUCCESS,N/A
+2026-01-24T16:56:44.485763,LinearPauliRotations_2,LinearPauliRotations,qiskit.circuit.library.arithmetic.linear_pauli_rotations,3,FAILED,AST_GENERATION_ERROR,FRAMEWORK_LIMITATION,QCtoXMLProgrammer failed: [Errno 32] Broken pipe,AST generation: FAILED; ,"Traceback (most recent call last):
+  File ""/home/bardcs-01/Documents/quantumTesting/benchmarks/test_all_benchmarks.py"", line 204, in test_circuit
+    ast_tree = self.visitor.startVisit(
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 79, in startVisit
+    print('self.XMLQubits', self.XMLQubits)
+BrokenPipeError: [Errno 32] Broken pipe
+"
+2026-01-24T16:56:44.508651,NLocal_2,NLocal,qiskit.circuit.library.n_local.n_local,2,PASSED,N/A,N/A,N/A,AST generation: SUCCESS; AST validation: SUCCESS; Simulation: SUCCESS,N/A
+2026-01-24T16:56:44.528045,PauliFeatureMap_2,PauliFeatureMap,qiskit.circuit.library.data_preparation.pauli_feature_map,2,FAILED,AST_GENERATION_ERROR,FRAMEWORK_LIMITATION,QCtoXMLProgrammer failed: 'QXRZ' object has no attribute 'angle',AST generation: FAILED; ,"Traceback (most recent call last):
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 179, in nodeToXMLProgrammer
+    float(exp.num().num())
+TypeError: Parameter expression with unbound parameters {Symbol { name: ""x"", uuid: 73ac387e-d0a7-468d-a11f-227963a5737c, index: Some(0), vector: Some(Py(0x7088e80193c0)) }} is not numeric.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File ""/home/bardcs-01/Documents/quantumTesting/benchmarks/test_all_benchmarks.py"", line 204, in test_circuit
+    ast_tree = self.visitor.startVisit(
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 84, in startVisit
+    self.visitNode(startingNode)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 108, in visitNode
+    self.visitNode(successor)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 108, in visitNode
+    self.visitNode(successor)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 106, in visitNode
+    self.nodeToXMLProgrammer(node)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 181, in nodeToXMLProgrammer
+    raise TypeError(""Error: An unset external parameter in a parameterised circuit was found. From gate: "" + str(node.name) + "" with angle: "" + str(exp.angle) + "". Please bind all parameters before compiling to XMLProgrammer."")
+                                                                                                                                                    ^^^^^^^^^
+AttributeError: 'QXRZ' object has no attribute 'angle'
+"
+2026-01-24T16:56:44.556022,PauliTwoDesign_2,PauliTwoDesign,qiskit.circuit.library.n_local.pauli_two_design,2,FAILED,AST_GENERATION_ERROR,FRAMEWORK_LIMITATION,QCtoXMLProgrammer failed: 'QXRZ' object has no attribute 'angle',AST generation: FAILED; ,"Traceback (most recent call last):
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 179, in nodeToXMLProgrammer
+    float(exp.num().num())
+TypeError: Parameter expression with unbound parameters {Symbol { name: ""θ"", uuid: 710ad98e-8a8d-46e2-8b00-9c06d8761d1c, index: Some(0), vector: Some(Py(0x7088e811ec80)) }} is not numeric.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File ""/home/bardcs-01/Documents/quantumTesting/benchmarks/test_all_benchmarks.py"", line 204, in test_circuit
+    ast_tree = self.visitor.startVisit(
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 84, in startVisit
+    self.visitNode(startingNode)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 108, in visitNode
+    self.visitNode(successor)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 108, in visitNode
+    self.visitNode(successor)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 106, in visitNode
+    self.nodeToXMLProgrammer(node)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 181, in nodeToXMLProgrammer
+    raise TypeError(""Error: An unset external parameter in a parameterised circuit was found. From gate: "" + str(node.name) + "" with angle: "" + str(exp.angle) + "". Please bind all parameters before compiling to XMLProgrammer."")
+                                                                                                                                                    ^^^^^^^^^
+AttributeError: 'QXRZ' object has no attribute 'angle'
+"
+2026-01-24T16:56:44.583130,PolynomialPauliRotations_2,PolynomialPauliRotations,qiskit.circuit.library.arithmetic.polynomial_pauli_rotations,3,PASSED,N/A,N/A,N/A,AST generation: SUCCESS; AST validation: SUCCESS; Simulation: SUCCESS,N/A
+2026-01-24T16:56:44.603264,QAOAAnsatz_2,QAOAAnsatz,qiskit.circuit.library.n_local.qaoa_ansatz,0,FAILED,UNEXPECTED_ERROR,UNKNOWN,Unexpected error: The operator representing the cost of the optimization problem is not set,Unexpected error occurred: The operator representing the cost of the optimization problem is not set,"Traceback (most recent call last):
+  File ""/home/bardcs-01/Documents/quantumTesting/benchmarks/test_all_benchmarks.py"", line 196, in test_circuit
+    spec = self.create_specification(circuit_info, circuit)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/home/bardcs-01/Documents/quantumTesting/benchmarks/test_all_benchmarks.py"", line 150, in create_specification
+    Depth: {circuit.depth()}
+            ^^^^^^^^^^^^^^^
+  File ""/home/bardcs-01/.local/lib/python3.12/site-packages/qiskit/circuit/library/blueprintcircuit.py"", line 263, in depth
+    self._build()
+  File ""/home/bardcs-01/.local/lib/python3.12/site-packages/qiskit/circuit/library/n_local/qaoa_ansatz.py"", line 346, in _build
+    super()._build()
+  File ""/home/bardcs-01/.local/lib/python3.12/site-packages/qiskit/circuit/library/n_local/evolved_operator_ansatz.py"", line 457, in _build
+    self._check_configuration()
+  File ""/home/bardcs-01/.local/lib/python3.12/site-packages/qiskit/circuit/library/n_local/qaoa_ansatz.py"", line 172, in _check_configuration
+    raise ValueError(
+ValueError: The operator representing the cost of the optimization problem is not set
+"
+2026-01-24T16:56:44.605027,QFT_2,QFT,qiskit.circuit.library.basis_change.qft,2,FAILED,AST_GENERATION_ERROR,FRAMEWORK_LIMITATION,QCtoXMLProgrammer failed: [Errno 32] Broken pipe,AST generation: FAILED; ,"Traceback (most recent call last):
+  File ""/home/bardcs-01/Documents/quantumTesting/benchmarks/test_all_benchmarks.py"", line 204, in test_circuit
+    ast_tree = self.visitor.startVisit(
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 87, in startVisit
+    print(""Extracted QXProgram (AST):"")
+BrokenPipeError: [Errno 32] Broken pipe
+"
+2026-01-24T16:56:44.627642,QuadraticForm_2,QuadraticForm,qiskit.circuit.library.arithmetic.quadratic_form,3,PASSED,N/A,N/A,N/A,AST generation: SUCCESS; AST validation: SUCCESS; Simulation: SUCCESS,N/A
+2026-01-24T16:56:44.650065,QuantumVolume_2,QuantumVolume,qiskit.circuit.library.quantum_volume,2,PASSED,N/A,N/A,N/A,AST generation: SUCCESS; AST validation: SUCCESS; Simulation: SUCCESS,N/A
+2026-01-24T16:56:45.970905,RGQFTMultiplier_2,RGQFTMultiplier,qiskit.circuit.library.arithmetic.multipliers.rg_qft_multiplier,6,FAILED,AST_GENERATION_ERROR,FRAMEWORK_LIMITATION,QCtoXMLProgrammer failed: [Errno 32] Broken pipe,AST generation: FAILED; ,"Traceback (most recent call last):
+  File ""/home/bardcs-01/Documents/quantumTesting/benchmarks/test_all_benchmarks.py"", line 204, in test_circuit
+    ast_tree = self.visitor.startVisit(
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 84, in startVisit
+    self.visitNode(startingNode)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 108, in visitNode
+    self.visitNode(successor)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 108, in visitNode
+    self.visitNode(successor)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 108, in visitNode
+    self.visitNode(successor)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 106, in visitNode
+    self.nodeToXMLProgrammer(node)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 116, in nodeToXMLProgrammer
+    print('inputBits', inputBits)
+BrokenPipeError: [Errno 32] Broken pipe
+"
+2026-01-24T16:56:46.015239,RealAmplitudes_2,RealAmplitudes,qiskit.circuit.library.n_local.real_amplitudes,2,FAILED,AST_GENERATION_ERROR,FRAMEWORK_LIMITATION,QCtoXMLProgrammer failed: 'QXRY' object has no attribute 'angle',AST generation: FAILED; ,"Traceback (most recent call last):
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 179, in nodeToXMLProgrammer
+    float(exp.num().num())
+TypeError: Parameter expression with unbound parameters {Symbol { name: ""θ"", uuid: 6c1fcb7a-4293-486e-ad14-f49108905a59, index: Some(0), vector: Some(Py(0x7088e7fc5dc0)) }} is not numeric.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File ""/home/bardcs-01/Documents/quantumTesting/benchmarks/test_all_benchmarks.py"", line 204, in test_circuit
+    ast_tree = self.visitor.startVisit(
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 84, in startVisit
+    self.visitNode(startingNode)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 108, in visitNode
+    self.visitNode(successor)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 106, in visitNode
+    self.nodeToXMLProgrammer(node)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 181, in nodeToXMLProgrammer
+    raise TypeError(""Error: An unset external parameter in a parameterised circuit was found. From gate: "" + str(node.name) + "" with angle: "" + str(exp.angle) + "". Please bind all parameters before compiling to XMLProgrammer."")
+                                                                                                                                                    ^^^^^^^^^
+AttributeError: 'QXRY' object has no attribute 'angle'
+"
+2026-01-24T16:56:46.041452,TwoLocal_2,TwoLocal,qiskit.circuit.library.n_local.two_local,2,PASSED,N/A,N/A,N/A,AST generation: SUCCESS; AST validation: SUCCESS; Simulation: SUCCESS,N/A
+2026-01-24T16:56:46.062127,VBERippleCarryAdder_2,VBERippleCarryAdder,qiskit.circuit.library.arithmetic.adders.vbe_ripple_carry_adder,7,FAILED,AST_GENERATION_ERROR,FRAMEWORK_LIMITATION,QCtoXMLProgrammer failed: [Errno 32] Broken pipe,AST generation: FAILED; ,"Traceback (most recent call last):
+  File ""/home/bardcs-01/Documents/quantumTesting/benchmarks/test_all_benchmarks.py"", line 204, in test_circuit
+    ast_tree = self.visitor.startVisit(
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 84, in startVisit
+    self.visitNode(startingNode)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 108, in visitNode
+    self.visitNode(successor)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 108, in visitNode
+    self.visitNode(successor)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 108, in visitNode
+    self.visitNode(successor)
+  [Previous line repeated 11 more times]
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 106, in visitNode
+    self.nodeToXMLProgrammer(node)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 116, in nodeToXMLProgrammer
+    print('inputBits', inputBits)
+BrokenPipeError: [Errno 32] Broken pipe
+"
+2026-01-24T16:56:46.091970,XOR_2,XOR,qiskit.circuit.library.boolean_logic.quantum_xor,2,PASSED,N/A,N/A,N/A,AST generation: SUCCESS; AST validation: SUCCESS; Simulation: SUCCESS,N/A
+2026-01-24T16:56:46.112518,ZFeatureMap_2,ZFeatureMap,qiskit.circuit.library.data_preparation._z_feature_map,2,FAILED,AST_GENERATION_ERROR,FRAMEWORK_LIMITATION,QCtoXMLProgrammer failed: 'QXRZ' object has no attribute 'angle',AST generation: FAILED; ,"Traceback (most recent call last):
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 179, in nodeToXMLProgrammer
+    float(exp.num().num())
+TypeError: Parameter expression with unbound parameters {Symbol { name: ""x"", uuid: 2eb2e45c-5600-467f-8f80-64b5595720a1, index: Some(0), vector: Some(Py(0x7088e7fb5b00)) }} is not numeric.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File ""/home/bardcs-01/Documents/quantumTesting/benchmarks/test_all_benchmarks.py"", line 204, in test_circuit
+    ast_tree = self.visitor.startVisit(
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 84, in startVisit
+    self.visitNode(startingNode)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 108, in visitNode
+    self.visitNode(successor)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 108, in visitNode
+    self.visitNode(successor)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 106, in visitNode
+    self.nodeToXMLProgrammer(node)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 181, in nodeToXMLProgrammer
+    raise TypeError(""Error: An unset external parameter in a parameterised circuit was found. From gate: "" + str(node.name) + "" with angle: "" + str(exp.angle) + "". Please bind all parameters before compiling to XMLProgrammer."")
+                                                                                                                                                    ^^^^^^^^^
+AttributeError: 'QXRZ' object has no attribute 'angle'
+"
+2026-01-24T16:56:46.145044,ZZFeatureMap_2,ZZFeatureMap,qiskit.circuit.library.data_preparation._zz_feature_map,2,FAILED,AST_GENERATION_ERROR,FRAMEWORK_LIMITATION,QCtoXMLProgrammer failed: 'QXRZ' object has no attribute 'angle',AST generation: FAILED; ,"Traceback (most recent call last):
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 179, in nodeToXMLProgrammer
+    float(exp.num().num())
+TypeError: Parameter expression with unbound parameters {Symbol { name: ""x"", uuid: c28fa78d-822c-492f-90c4-03a382ce3233, index: Some(0), vector: Some(Py(0x7088e7fc5300)) }} is not numeric.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File ""/home/bardcs-01/Documents/quantumTesting/benchmarks/test_all_benchmarks.py"", line 204, in test_circuit
+    ast_tree = self.visitor.startVisit(
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 84, in startVisit
+    self.visitNode(startingNode)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 108, in visitNode
+    self.visitNode(successor)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 108, in visitNode
+    self.visitNode(successor)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 106, in visitNode
+    self.nodeToXMLProgrammer(node)
+  File ""/home/bardcs-01/Documents/quantumTesting/qiskit-to-xmlprogrammer/qiskit_to_xmlprogrammer.py"", line 181, in nodeToXMLProgrammer
+    raise TypeError(""Error: An unset external parameter in a parameterised circuit was found. From gate: "" + str(node.name) + "" with angle: "" + str(exp.angle) + "". Please bind all parameters before compiling to XMLProgrammer."")
+                                                                                                                                                    ^^^^^^^^^
+AttributeError: 'QXRZ' object has no attribute 'angle'
+"

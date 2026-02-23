@@ -1,0 +1,10 @@
+{
+  "circuit_name": "RGQFTMultiplier_2",
+  "class_name": "RGQFTMultiplier",
+  "module": "qiskit.circuit.library.arithmetic.multipliers.rg_qft_multiplier",
+  "description": "A QFT multiplication circuit to store product of two input registers out-of-place.\n\n    Multiplication in this circuit is implemented using the procedure of Fig. 3 in [1], where\n    weighted sum rotations are implemented as given in Fig. 5 in [1]. QFT is used on the output\n    register and is followed by rotations controlled by input registers. The rotations\n    transform the state into the product of two input registers in QFT base, which is\n    reverted from QFT base using inverse QFT.\n    As ",
+  "num_qubits": 6,
+  "num_clbits": 0,
+  "specification": "\nCircuit: RGQFTMultiplier_2\nQubits: 6\nClassical bits: 0\nDepth: 1\nSize: 1\n\nExpected Behavior:\n- Circuit should compile to XMLProgrammer AST without errors\n- AST should be valid according to SimulatorValidator\n- Simulator should execute without runtime errors\n- Output state should be consistent with circuit semantics\n",
+  "expected_behavior": "Circuit from RGQFTMultiplier class"
+}

@@ -19,13 +19,11 @@ def make_inc_gate(n: int):
 
     # Increment logic 
     for j in range(n - 1, 0, -1):
-        # Flip target[j] if all lower bits target[0]...target[j-1] are 1
         controls = [target[k] for k in range(j)]
         qc.mcx(controls, target[j])
             
     # The LSB always flips
-    qc.x(target[0])
-    
+    qc.x(target[0]) 
     return qc
 
 def hamming_weight_circuit(n: int):

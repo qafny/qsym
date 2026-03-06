@@ -438,13 +438,26 @@ class Simulator(ProgramVisitor):
         self.reverse(x, self.env.get(x))
 
     def turn_qft(self, x, n):
-        val = self.state.get(x)[0]
-        r1 = val.getPhase()
+        # grab the full array (list/dict) of qubits for register 'x'
+        state_array = self.state.get(x)
+        
+        # grab the first qubit just to extract the phase
+        val0 = state_array[0]
+        r1 = val0.getPhase()
         r2 = 0
-        if isinstance(val, CoqNVal):
+        
+        if isinstance(val0, CoqNVal):
             for i in range(n):
-                r2 = (r2 + pow(2, i) * int(val[i].getBit())) % pow(2, n)
-        result = val[n:]
+
+                r2 = (r2 + pow(2, i) * int(state_array[i].getBit())) % pow(2, n)
+                
+        # slice 'state_array' to get the remaining bits.
+        if isinstance(state_array, list):
+            result = state_array[n:]
+        else:
+            result = [state_array[i] for i in range(n, len(state_array))]
+            
+        # Store the compressed CoqQVal back into the 0th index
         self.state.get(x)[0] = CoqQVal(r1, r2, result, n)
 
         # actually, we need to change the QFT function

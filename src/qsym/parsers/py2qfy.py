@@ -28,7 +28,7 @@ def _resolve_exp(node):
     if isinstance(node, ast.BinOp):
         left = _resolve_exp(node.left)
         right = _resolve_exp(node.right)
-        op_map = {ast.Add: "+", ast.Sub: "-", ast.Mult: "*", ast.Div: "/"}
+        op_map = {ast.Add: "+", ast.Sub: "-", ast.Mult: "*", ast.Div: "/", ast.FloorDiv: "//"}
         return f"({left}{op_map[type(node.op)]}{right})"
     if isinstance(node, ast.Subscript):
         # Handle q[i]
@@ -112,7 +112,7 @@ class PythonToQafny(ast.NodeVisitor):
         if not isinstance(node.value, ast.Call):
             return
 
-        # Case A: inc_gate = make_inc_gate(n)
+        # Case A: pure arith, e.g.inc_gate = make_inc_gate(n)
         func_name = getattr(node.value.func, 'id', '')
         if func_name in self.known_functions:
             lambda_str = self.known_functions[func_name]
@@ -120,7 +120,7 @@ class PythonToQafny(ast.NodeVisitor):
                 if isinstance(target, ast.Name):
                     self.gate_vars[target.id] = {"type": "base", "lambda": lambda_str}
 
-        # Case B: c_inc_gate = inc_gate.control(1)
+        # Case B: with control, e.g. c_inc_gate = inc_gate.control(1)
         elif isinstance(node.value.func, ast.Attribute):
             method_name = node.value.func.attr
             base_var = getattr(node.value.func.value, 'id', '')
@@ -284,8 +284,8 @@ class PythonToQafny(ast.NodeVisitor):
             target = _resolve_exp(call.args[0])
             return QXQAssign(location=[target], exp=QXSingle("X"))
 
-        #1. translate to qxif, then we need to symbolic interpret the arithmetic at the low-level. 
-        #2. or we can simulate the whole block/function to test the property. 
+        #translate to qxif, then we need to symbolic interpret the arithmetic at the low-level. 
+        #or we can simulate the whole block/function to test the property. we chose this now.
         elif op == 'mcx':
             ctrls = _resolve_exp(call.args[0]) # e.g. "controls"
             targ = _resolve_exp(call.args[1])  # e.g. "target[j]"
@@ -501,7 +501,7 @@ class PythonToQafny(ast.NodeVisitor):
             left = self._extract_index_expr(node.left)
             right = self._extract_index_expr(node.right)
             # Map Python ast.Add/Sub to string "+"/"-"
-            op_map = {ast.Add: "+", ast.Sub: "-", ast.Mult: "*", ast.Div: "/"}
+            op_map = {ast.Add: "+", ast.Sub: "-", ast.Mult: "*", ast.Div: "/", ast.FloorDiv: "//"}
             op_str = op_map.get(type(node.op), "?")
             return QXBin(op=op_str, left=left, right=right)
             
@@ -554,10 +554,10 @@ def main():
         
         # This executes the file. If @qlambda fails Hypothesis PBT
         spec.loader.exec_module(module)
-        rich.print("[bold green]Verification Passed! No contract violations.[/]\n")
+        rich.print("[bold green]pbt Passed! No contract violations.[/]\n")
         
     except Exception as e:
-        rich.print(f"[bold red]Verification Failed: Circuit violates @qlambda contract.[/]")
+        rich.print(f"[bold red]pbt Failed: Circuit violates @qlambda contract.[/]")
         import traceback
         traceback.print_exc()
         sys.exit(1) 

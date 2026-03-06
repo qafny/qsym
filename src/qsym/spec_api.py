@@ -1,6 +1,6 @@
-from qsym.arith_pbt import run_pbt_veri
+from qsym.arith_pbt import run_pbt_veri, build_dynamic_strategy
 
-def qlambda(math_spec: str, verify: bool = True):
+def qlambda(math_spec: str, strategy=None, verify=True):
     """
     Decorator to attach Qafny semantic meaning to a circuit factory.
     Example: @qlambda("x => |x + 1⟩")
@@ -9,7 +9,8 @@ def qlambda(math_spec: str, verify: bool = True):
     def decorator(func):
         func.__qsym_lambda__ = math_spec
         if verify:
-            run_pbt_veri(func, math_spec)
+            active_strategy = strategy or build_dynamic_strategy(func, math_spec)
+            run_pbt_veri(func, math_spec, active_strategy)
         return func
     return decorator
 

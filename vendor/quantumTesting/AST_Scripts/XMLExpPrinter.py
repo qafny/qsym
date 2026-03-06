@@ -1,11 +1,11 @@
 #from collections import ChainMap
 from types import NoneType
 
-from Source.quantumCode.AST_Scripts.XMLExpVisitor import XMLExpVisitor
+from AST_Scripts.XMLExpVisitor import XMLExpVisitor
 #from Source.quantumCode.AST_Scripts.ExpParser import *
 #from Source.quantumCode.AST_Scripts.XMLExpVisitor import XMLExpVisitor
 #from Source.quantumCode.AST_Scripts.XMLExpParser import XMLExpParser
-from Source.quantumCode.AST_Scripts.XMLProgrammer import *
+from AST_Scripts.XMLProgrammer import *
 
 class XMLExpPrinter(XMLExpVisitor):
 

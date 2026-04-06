@@ -59,7 +59,7 @@ def append_c_mod_add(qc, ctrl, target, overflow_anc, A, N):
     # return to computational basis
     qc.append(QFT(n, do_swaps=True).inverse(), target)
 
-@qlambda("x => |base ^ (2 ^ i) * x % N⟩") 
+#@qlambda("x => |base ^ (2 ^ i) * x % N⟩") 
 def make_inplace_multiplier(n_work: qnum, base: int, i: qidx, N: int):
     C = pow(base, 2**i, N)
 
@@ -180,4 +180,4 @@ def shors_circuit(base: int, N: int):
     return circuit
 
 if __name__ == "__main__":
-    qc = shors_circuit(base=11, N=21)
+    qc = shors_circuit(base=7, N=15)

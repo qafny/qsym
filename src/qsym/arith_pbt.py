@@ -13,7 +13,7 @@ if vendor_dir not in sys.path:
     sys.path.insert(0, os.path.join(vendor_dir, 'qiskit-to-xmlprogrammer'))
 
 #from qiskit_to_xmlprogrammer import QCtoXMLProgrammer
-from AST_Scripts.XMLProgrammer import QXNum, QXX, QXCU, QXQFT, QXRshift, QXRZ, QXRQFT, QXSR, QXH, QXRev, QXLshift, QXRY
+from AST_Scripts.XMLProgrammer import QXNum, QXX, QXCU, QXQFT, QXRZ, QXRQFT, QXSR, QXH, QXRY
 from AST_Scripts.simulator import CoqNVal, CoqYVal, Simulator, bit_array_to_int, to_binary_arr
 from AST_Scripts.XMLPrinter import XMLPrinter
 from hypothesis import given, settings, assume, strategies as st
@@ -58,6 +58,7 @@ def circuit_to_ast(qc, reg_name="test"):
 
         elif gate.name == 'IQFT':      
             ast_nodes.append(QXRQFT(id=reg_name))
+        
         # Multi-Qubit and Controlled Gates
         elif gate.name == 'cx':
             ctrl, target = qubits[0], qubits[1]

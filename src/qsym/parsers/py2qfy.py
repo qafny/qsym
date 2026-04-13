@@ -6,7 +6,7 @@ from antlr4 import InputStream, CommonTokenStream
 from qsym.parsers.qafny_parser.ExpLexer import ExpLexer  
 from qsym.parsers.qafny_parser.ExpParser import ExpParser 
 from qsym.parsers.qafny_parser.ProgramTransformer import ProgramTransformer 
-from qsym.ast.Programmer import *
+from qsym.qafny_ast.Programmer import *
 from qsym.sp_utils import _mk_num, _mk_bind,_mk_crange,_mk_call
 
 # Helper to create a Qafny Quantum Range: q[0, n)

@@ -6,7 +6,7 @@ class PrettyPrinter(ProgramVisitor):
     
     def visitProgram(self, ctx: QXProgram):
         program = ''
-        for method in ctx.method():
+        for method in ctx.topLevelStmts():
             program += method.accept(self) + "\n\n"
         return program
     
@@ -60,10 +60,10 @@ class PrettyPrinter(ProgramVisitor):
     def visitQSpec(self, ctx: QXQSpec):
         qty = ctx.qty().accept(self) if ctx.qty() else ""
         loci = [locus.accept(self) for locus in ctx.locus()]
-        if isinstance(ctx.state(), list):
-            state = ' '.join(st.accept(self) for st in ctx.state())
+        if isinstance(ctx.states(), list):
+            state = ' '.join(st.accept(self) for st in ctx.states())
         else:
-            state = ctx.state().accept(self)
+            state = ctx.states().accept(self)
         return f"{', '.join(loci)} : {qty} ↦ {state}"
     
     def visitCall(self, ctx: QXCall):
@@ -115,13 +115,16 @@ class PrettyPrinter(ProgramVisitor):
                 
         # Handle amplitude
         amps = []
-        for elem in ctx.amps():
-            amps.append(f"{elem.accept(self)}")   
+ #       for elem in ctx.amp():
+        amps.append(f"{ctx.amp().accept(self)}")   
+        
         # Handle kets
-        kets = []
-        for ket in ctx.kets():
-            state = ket.accept(self)
-            kets.append(f"|{state}⟩")
+        # kets = []
+        # for ket in ctx.kets():
+        #     state = ket.accept(self)
+        #     kets.append(f"|{state}⟩")
+
+        kets = ctx.kets().accept(self)
 
         # Join summations and state with proper spacing
         return f"{''.join(sums)} {'*'.join(amps)}{' '.join(kets)}"
@@ -152,7 +155,7 @@ class PrettyPrinter(ProgramVisitor):
     def visitQRange(self, ctx: QXQRange):
         left = ctx.crange().left().accept(self)
         right = ctx.crange().right().accept(self)
-        return f"{ctx.ID()}[{left}, {right})"
+        return f"{ctx.location()}[{left}, {right})"
     
     def visitCon(self, ctx: QXCon):
         left = ctx.range().left().accept(self)

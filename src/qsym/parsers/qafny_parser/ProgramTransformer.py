@@ -13,10 +13,10 @@ from .ExpVisitor import *
 from .ExpParser import *
 
 try:
-    from qsym.ast.Programmer import *
+    from qsym.qafny_ast.Programmer import *
 except ImportError:
     try:
-        from qsym.ast.Programmer import *
+        from qsym.qafny_ast.Programmer import *
     except ImportError:
         raise
 

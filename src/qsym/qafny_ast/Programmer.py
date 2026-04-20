@@ -2429,7 +2429,7 @@ class QXProgram(QXTop):
         return self._line_number
     
 class QXCU(QXExp):
-    def __init__(self, id: str, v: QXVexp, p: QXProgram, block:str = None):
+    def __init__(self, id: str, v: QXQExp, p: QXProgram, block:str = None):
         self._id = id
         self._v = v
         self._prog = p

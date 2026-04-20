@@ -16,17 +16,14 @@ method ripple_carry_adder(
   requires |amps| == 1
   requires |phases| == 1
   
-  ensures validState(okets, oamps, ophases, nQ)
-  
+  ensures validState(okets, oamps, ophases, nQ) 
   //Property 1: addend is set by NOT gates
   //Register A input is 6
-  ensures forall i :: 0 <= i < |okets| ==> castBVInt(okets[i][0..4]) == 6
-  
+  ensures forall i :: 0 <= i < |okets| ==> castBVInt(okets[i][0..4]) == 6 
   // Property 2: Addition Logic (Modulo 16 for 4 bits)
   // Register B (4..8) stores the sum
   ensures forall i :: 0 <= i < |okets| ==> 
-    castBVInt(okets[i][4..8]) == (castBVInt(kets[i][4..8]) + castBVInt(kets[i][0..4])) % 16
-    
+    castBVInt(okets[i][4..8]) == (castBVInt(kets[i][4..8]) + castBVInt(kets[i][0..4])) % 16   
   // Property 3: Clean Ancilla
   // return the carry qubits (8..11) back to 0
   ensures forall i :: 0 <= i < |okets| ==> castBVInt(okets[i][8..11]) == 0

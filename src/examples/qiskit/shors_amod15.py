@@ -1,6 +1,7 @@
-from qiskit import QuantumCircuit, transpile
+from qiskit import QuantumCircuit, transpile, qpy
 from qiskit.transpiler.passes.synthesis.high_level_synthesis import HLSConfig
 from qiskit.converters import circuit_to_dag, dag_to_circuit
+from qiskit.circuit import Gate
 from qiskit.circuit.library import QFT
 from qiskit.visualization import dag_drawer
 from qsym.spec_api import qlambda
@@ -8,7 +9,7 @@ from qsym.spec_api import qspec
 from qsym.types import qidx, qnum
 import numpy as np
 from hypothesis import assume
-from assertion import StateAssertion
+from examples.qiskit.assertion import StateAssertion
 
 
 #Assumptions: user understands the Qafny syntax. 
@@ -55,7 +56,7 @@ def qft_dagger(n):
             qc.cp(-np.pi/float(2**(j-m)), m, j)
         qc.h(j)
     qc.name = "QFT†"
-    return qc
+    return qc.to_gate()
 
 def shors_circuit(a: int, N_COUNT: int):
     qc = QuantumCircuit(N_COUNT + 4, N_COUNT)
@@ -72,7 +73,7 @@ def shors_circuit(a: int, N_COUNT: int):
     for q in range(N_COUNT):
         qc.append(c_amod15(a, 2**q),[q] + [i+N_COUNT for i in range(4)])
         # if (q[i]) { p[0, n) *= λ (x => |base ^ (2 ^ i) * x % N⟩); 
-    assertion_str = "q[0, N_COUNT) : en ↦ ∑ j ∈ [0, 2) . 1/sqrt(2) . |j⟩**n"
+    assertion_str = f"q[0, {N_COUNT}) : En ↦ ∑ j ∈ [0, 2^n) . 1/sqrt(2^n) |j⟩"
     qc.append(StateAssertion(assertion_str, N_COUNT), range(N_COUNT))
 
     # Do inverse-QFT
@@ -87,28 +88,29 @@ def main():
 
     qc = shors_circuit(7, 15)
 
+    ccccc_h = Gate(name="ccccc_h", num_qubits=6, params=[])
+
     #TODO need to distinguish built-in gates and custom gates
-    cc = qc.decompose(gates_to_decompose=[g.operation for g in qc.data if "mod 15" in g.operation.name])
-    print(cc.draw())
-    dag = circuit_to_dag(cc)
+    dc = qc.decompose(gates_to_decompose=[g.operation for g in qc.data if "mod 15" in g.operation.name])
+ #   cc = qc.decompose()
+    print(dc.draw())
+    dag = circuit_to_dag(dc)
     #dag_drawer(dag)
     for node in dag.topological_op_nodes():
         num_ctrl = getattr(node.op, 'num_ctrl_qubits', 0)
         print(node.qargs, node.num_clbits, node.num_qubits, num_ctrl)
         print(node.name, node.label, node.params)
 
-#    oc = qc.decompose()
-#    print(oc.draw())
-    
-
     #transpile can't do custom gates
     #real_qc0 = transpile(cc, basis_gates=['rz', 'ry', 'rx', 'cx', 'ccx', 'x', 'h', 'state_assertion'], optimization_level=3)
-    real_qc0 = transpile(cc, basis_gates=['rz', 'ry', 'rx', 'cx', 'ccx', 'x', 'h'], optimization_level=1)
+    real_qc0 = transpile(dc, basis_gates=['rz', 'ry', 'rx', 'cx', 'ccx','x', 'h'])
     print("\n Hardware depth_0:", real_qc0.depth())
     print("Hardware gates_0:", real_qc0.count_ops())
     #for inst, qargs, cargs in real_qc0.data:
     #    print(f"Name: {inst.name}, Label: {inst.label}, Params: {inst.params}")
+    return dc
 
+circuit = main()
 if __name__ == '__main__':
     main()
 

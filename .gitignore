@@ -10,3 +10,4 @@ src/qsym/__pycache__/
 src/qsym/parsers/__pycache__/
 src/examples/qiskit/__pycache__/
 src/qsym/parsers/qafny_parser/__pycache__/
+src/qsym/qafny_ast/__pycache__/

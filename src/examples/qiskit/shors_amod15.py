@@ -37,10 +37,11 @@ def c_amod15(a, power):
             for q in range(4):
                 U.x(q)
 
-    my_assert = StateAssertion("aux == (aux * 7) % 15", num_qubits=4)
+    my_assert = StateAssertion(f"aux == (aux * {a}) % 15", num_qubits=4)
     U.append(my_assert, range(4))
     U = U.to_gate()
-    U.name = f"{a}^{power} mod 15"
+    U.params = [a, power]
+#    U.name = f"{a}^{power} mod 15"
     
     c_U = U.control()
     return c_U
@@ -87,8 +88,6 @@ def shors_circuit(a: int, N_COUNT: int):
 def main():
 
     qc = shors_circuit(7, 15)
-
-    ccccc_h = Gate(name="ccccc_h", num_qubits=6, params=[])
 
     #TODO need to distinguish built-in gates and custom gates
     dc = qc.decompose(gates_to_decompose=[g.operation for g in qc.data if "mod 15" in g.operation.name])

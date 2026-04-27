@@ -112,7 +112,9 @@ class QCtoQXProgrammer:
         for node in self.dag.topological_op_nodes():
             self.dag_to_qx(node)
 
-        optimized_stmts = self.roll_loop(self.expList)
+
+        vectorized_stmts = self.vectorize_gates(self.expList)    
+        optimized_stmts = self.roll_loop(vectorized_stmts)
 
         method = QXMethod(
             id="main",
@@ -131,7 +133,7 @@ class QCtoQXProgrammer:
         if emit_qx:
             qafny = PrettyPrinter()
             qafny.visitProgram(self.program)
-            print("Qafny Representation:")
+            print(f"\n Qafny Representation: \n {qafny.visitProgram(self.program)}")
         else:
             print("Qafny emission skipped; AST is available via return value.")
 
@@ -277,35 +279,129 @@ class QCtoQXProgrammer:
         return ranges          
 
     def infer_parameter_math(self, val_list, iterator_id):
-        """
-        Deduces the mathematical pattern of parameters for a normalized loop index.
-        val_list: A list of integers extracted from sequential gates (e.g.,)
-        """
+        # Secure the first value (e.g., the integer 7 or 1)
+        first_val = val_list[0]
+        
         # 1. Constant Progression (e.g., the base '7' never changes)
-        if all(v == val_list for v in val_list):
-            return QXNum(val_list)
+        is_constant = True
+        for v in val_list:
+            if v != first_val:
+                is_constant = False
+                break
+                
+        if is_constant:
+            # Safely pass ONLY the single integer!
+            return QXNum(num=first_val) 
             
         # 2. Geometric Progression (e.g., the power scaling: 1, 2, 4, 8)
-        is_geometric = True
-        ratio = None
-        if len(val_list) > 1 and val_list != 0:
-            ratio = val_list // val_list
+        if first_val != 0:
+            ratio = val_list[1] // first_val
+            is_geometric = True
+            
             # Verify the ratio holds true for the entire sequence
             for i in range(1, len(val_list)):
                 if val_list[i] != val_list[i-1] * ratio:
                     is_geometric = False
                     break
                     
-        if is_geometric and ratio is not None:
-            # Formula: start_val * (ratio ^ k)
-            ratio_expr = QXBin('^', QXNum(ratio), QXBind(iterator_id))
-            if val_list == 1:
-                return ratio_expr
-            else:
-                return QXBin('*', QXNum(val_list), ratio_expr)
+            if is_geometric:
+                # Build: ratio ^ k (e.g., 2^k)
+                ratio_expr = QXBin(op='^', left=QXNum(num=ratio), right=QXBind(id=iterator_id))
+                
+                if first_val == 1:
+                    return ratio_expr
+                else:
+                    # Build: first_val * (ratio ^ k)
+                    return QXBin(op='*', left=QXNum(num=first_val), right=ratio_expr)
 
-        # If it doesn't fit a known pattern, return None so the roller aborts
+        # If it doesn't fit a known pattern, return None
         return None
+    
+    def vectorize_gates(self, expList):
+        optimized = []
+        i = 0
+        
+        while i < len(expList):
+            stmt = expList[i]
+            
+            # 1. Look for a single-qubit gate assignment
+            if (isinstance(stmt, QXQAssign) and 
+                isinstance(stmt.exp(), QXSingle) and 
+                len(stmt.location()) == 1):
+                
+                gate_name = stmt.exp().op() if hasattr(stmt.exp(), 'id') else stmt.exp().op() 
+                locus = stmt.location()[0]
+
+                print(f"locus: {locus}")
+                
+                # Ensure we have a readable integer index
+                if not hasattr(locus.crange().left(), 'num'):
+                    optimized.append(stmt)
+                    i += 1
+                    continue
+                    
+                start_idx = locus.crange().left().num()
+                expected_next = start_idx + 1
+                seq_length = 1
+                
+                # ─── THE LOOKAHEAD ───
+                while (i + seq_length) < len(expList):
+                    next_stmt = expList[i + seq_length]
+                    
+                    # must be an assignment of a QXSingle to 1 location
+                    if not (isinstance(next_stmt, QXQAssign) and 
+                            isinstance(next_stmt.exp(), QXSingle) and 
+                            len(next_stmt.location()) == 1):
+                        break
+                        
+                    # must be the exact same gate (e.g., another 'H')
+                    next_gate_name = next_stmt.exp().op() if hasattr(next_stmt.exp(), 'id') else next_stmt.exp().op()
+                    if next_gate_name != gate_name:
+                        break
+                        
+                    # must act on the immediate next contiguous qubit
+                    next_locus = next_stmt.location()[0]
+                    if not hasattr(next_locus.crange().left(), 'num'):
+                        break
+                    if next_locus.crange().left().num() != expected_next:
+                        break
+                        
+                    # must be a width of 1 (e.g., q[1, 2) )
+                    if next_locus.crange().right().num() != expected_next + 1:
+                        break
+                        
+                    expected_next += 1
+                    seq_length += 1
+                
+                # ─── COMPRESS THE SEQUENCE ───
+                if seq_length > 1:
+                    # Build the merged boundary: e.g., 0 to 15
+                    merged_crange = QXCRange(
+                        left=QXNum(num=start_idx), 
+                        right=QXNum(num=start_idx + seq_length)
+                    )
+                    
+                    # Create the unified memory location
+                    merged_locus = QXQRange(
+                        location=locus.location(), # This keeps 'q'
+                        crange=merged_crange
+                    )
+                    
+                    # Build the broadcasted assignment
+                    merged_stmt = QXQAssign(
+                        location=[merged_locus],
+                        exp=QXSingle(gate_name) # Or id=gate_name, matching your init signature
+                    )
+                    
+                    optimized.append(merged_stmt)
+                    i += seq_length
+                    continue
+
+            # if it's not a single gate or doesn't repeat, leave it alone
+            optimized.append(stmt)
+            i += 1
+            
+        return optimized
 
     def roll_loop(self, expList):
             optimized = []
@@ -314,21 +410,22 @@ class QCtoQXProgrammer:
             
             while i < len(expList):
                 stmt = expList[i]
-
-                if isinstance(stmt, QXQAssign) and isinstance(stmt.exp(), QXCall):
-                    print(f"DEBUG [Index {i}]: Found QXCall '{stmt.exp().ID()}'")
-                    
-                    loci = stmt.location() 
-                    print(f"  - Location len: {len(loci)}")
                 
-                    if len(loci) > 0:
-                        ctrl_locus = loci[0]
-                        print(f"  - Control Left Type: {type(ctrl_locus.crange().left())}")
-                        try:
-                            print(f"  - Control Left Value: {ctrl_locus.crange().left().num()}")
-                            print(f"  - First Param Value: {stmt.exp().exps().num()}")
-                        except Exception as e:
-                            print(f"  - ATTRIBUTE ERROR: {e}")
+                ##Debug
+                # if isinstance(stmt, QXQAssign) and isinstance(stmt.exp(), QXCall):
+                #     print(f"DEBUG [Index {i}]: Found QXCall '{stmt.exp().ID()}'")
+                    
+                #     loci = stmt.location() 
+                #     print(f"  - Location len: {len(loci)}")
+                
+                    # if len(loci) > 0:
+                    #     ctrl_locus = loci[0]
+                    #     print(f"  - Control Left Type: {type(ctrl_locus.crange().left())}")
+                    #     try:
+                    #         print(f"  - Control Left Value: {ctrl_locus.crange().left().num()}")
+                    #         print(f"  - First Param Value: {stmt.exp().exps()}")
+                    #     except Exception as e:
+                    #         print(f"  - ATTRIBUTE ERROR: {e}")
 
                 #TODO single case            
                 
@@ -377,37 +474,46 @@ class QCtoQXProgrammer:
                             break
                             
                         # target equivalence: target register boundaries must perfectly match
-                        next_target = next_stmt.location()
+                        next_target = next_stmt.location()[1]
+        #                print(f"\nnext_target: {next_target}")
                         if (next_target.crange().left().num() != target_locus.crange().left().num() or
                             next_target.crange().right().num() != target_locus.crange().right().num()):
                             break
                             
                         # topology: control qubit index must increment exactly by 1
                         expected_ctrl = ctrl_start + loop_length
-                        next_ctrl = next_stmt.location()
+                        next_ctrl = next_stmt.location()[0]
                         if not hasattr(next_ctrl.crange().left(), 'num') or next_ctrl.crange().left().num() != expected_ctrl:
                             break
                             
                         # extract parameters safely
                         try:
-                            param_history.append([p.num for p in next_stmt.exp.exps])
+                            param_history.append([p.num() for p in next_stmt.exp().exps()])
                         except AttributeError:
                             break
                             
                         loop_length += 1
                     
-                    
+                    print(f"\n loop_length {loop_length}")
                     # only roll if we found a sequence of 3 or more
                     if loop_length > 2: 
                         dynamic_params = []
                         
-                        # analyze each parameter's column mathematically
+                        #DEBUG READ
+                        print(f"\n--- DEBUG MATH DEDUCTION (Loop Length: {loop_length}) ---")
                         for p_idx in range(num_params):
                             column_vals = [history[p_idx] for history in param_history]
+                            
+                            print(f"  Col {p_idx} Values: {column_vals}")
+                            print(f"  Col {p_idx} Types:  {[type(v) for v in column_vals]}")
+                            
                             dyn_ast_node = self.infer_parameter_math(column_vals, 'k')
+                            print(f"  Col {p_idx} Inferred Node: {dyn_ast_node}")
+                            
                             dynamic_params.append(dyn_ast_node)
+                        print(f"--------------------------------------------------\n")
                         
-                        # if the math deduction failed for any parameter, abort and leave unrolled
+                        # If the math deduction failed for ANY parameter, abort and leave unrolled
                         if None in dynamic_params:
                             optimized.append(stmt)
                             i += 1
@@ -422,22 +528,28 @@ class QCtoQXProgrammer:
                         range_end_ast = QXNum(loop_length)
                         
                         # calculate physical address: q[ctrl_start + k, ctrl_start + k + 1)
-                        left_idx = QXBin('+', QXNum(ctrl_start), QXBind('k'))
-                        right_idx = QXBin('+', left_idx, QXNum(1))
-                        dyn_ctrl = QXQRange('q', crange=QXCRange(left_idx, right_idx))
+                        if ctrl_start == 0:
+                            left_idx = QXBind(id='k')
+                        else:
+                            left_idx = QXBin(op='+', left=QXNum(ctrl_start), right=QXBind('k'))
+                        right_idx = QXBin(op='+', left=left_idx, right=QXNum(num=1))
+                        dyn_ctrl = QXQRange('q', crange=QXCRange(left=left_idx, right=right_idx))
                         
                         # construct the loop body
+                        print(f"\n dynamic_params: {dynamic_params}")
                         loop_body = QXQAssign(
                             location=[dyn_ctrl, target_locus],
                             exp=QXCall(id=unified_method_name, exps=dynamic_params) 
                         )
+
+                        loop_crange = QXCRange(left=range_start_ast, right=range_end_ast)
                         
                         # append the final QXFor object
                         optimized.append(QXFor(
-                            iterator_id='k',
-                            range_start=range_start_ast,
-                            range_end=range_end_ast,
-                            body_stmts=[loop_body]
+                            id='k',
+                            crange=loop_crange,
+                            conds=[],
+                            stmts=[loop_body]
                         ))
                         
                         # jump the cursor past the flat statements we just consumed

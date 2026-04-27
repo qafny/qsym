@@ -1572,7 +1572,7 @@ class QXIf(QXStmt):
 @qafny.auto.equality
 class QXFor(QXStmt):
 
-    def __init__(self, id: str, crange: QXCRange, conds: [QXCond], stmts: [QXStmt] , line_number = None):
+    def __init__(self, id: str, crange: QXCRange, conds: list[QXCond], stmts: list[QXStmt] , line_number = None):
          
         self._id = id.getText() if isAntlrNode(id) else id
         self._crange = crange
@@ -1589,22 +1589,22 @@ class QXFor(QXStmt):
     def crange(self) -> QXCRange:
         return self._crange
 
-    def conds(self) -> [QXCond]:
+    def conds(self) -> list[QXCond]:
         '''Returns an array of loop conditions used to prove correctness.'''
         return self._conds
 
-    def inv(self) -> [QXSpec]:
+    def inv(self) -> list[QXSpec]:
         return list(map(lambda inv: inv.spec(), filter(lambda cond: isinstance(cond, QXInvariant), self._conds)))
 
-    def sep(self) -> [[QXQRange]]:
+    def sep(self) -> list[list[QXQRange]]:
         '''Returns all the loci used in separates clauses from the conditions array'''
         return list(map(lambda sep: sep.locus(), filter(lambda cond: isinstance(cond, QXSeparates), self._conds)))
 
-    def dec(self) -> [QXAExp]:
+    def dec(self) -> list[QXAExp]:
         '''Returns all the arith expressions used in decreases clauses from the conditions array'''
         return list(map(lambda sep: sep.aexp(), filter(lambda cond: isinstance(cond, QXDecreases), self._conds)))
 
-    def stmts(self) -> [QXStmt]:
+    def stmts(self) -> list[QXStmt]:
         return self._stmts
 
     def __repr__(self):

@@ -279,10 +279,10 @@ class QCtoQXProgrammer:
         return ranges          
 
     def infer_parameter_math(self, val_list, iterator_id):
-        # Secure the first value (e.g., the integer 7 or 1)
+        
         first_val = val_list[0]
         
-        # 1. Constant Progression (e.g., the base '7' never changes)
+        # constant Progression (e.g., the base '7' never changes)
         is_constant = True
         for v in val_list:
             if v != first_val:
@@ -290,28 +290,28 @@ class QCtoQXProgrammer:
                 break
                 
         if is_constant:
-            # Safely pass ONLY the single integer!
+            # pass the single value
             return QXNum(num=first_val) 
             
-        # 2. Geometric Progression (e.g., the power scaling: 1, 2, 4, 8)
+        # geometric progression 
         if first_val != 0:
             ratio = val_list[1] // first_val
             is_geometric = True
             
-            # Verify the ratio holds true for the entire sequence
+            # verify the ratio holds true for the entire sequence
             for i in range(1, len(val_list)):
                 if val_list[i] != val_list[i-1] * ratio:
                     is_geometric = False
                     break
                     
             if is_geometric:
-                # Build: ratio ^ k (e.g., 2^k)
+                # build: ratio ^ k (e.g., 2^k)
                 ratio_expr = QXBin(op='^', left=QXNum(num=ratio), right=QXBind(id=iterator_id))
                 
                 if first_val == 1:
                     return ratio_expr
                 else:
-                    # Build: first_val * (ratio ^ k)
+                    # build: first_val * (ratio ^ k)
                     return QXBin(op='*', left=QXNum(num=first_val), right=ratio_expr)
 
         # If it doesn't fit a known pattern, return None
@@ -324,7 +324,7 @@ class QCtoQXProgrammer:
         while i < len(expList):
             stmt = expList[i]
             
-            # 1. Look for a single-qubit gate assignment
+            # look for a single-qubit gate assignment
             if (isinstance(stmt, QXQAssign) and 
                 isinstance(stmt.exp(), QXSingle) and 
                 len(stmt.location()) == 1):
@@ -334,7 +334,7 @@ class QCtoQXProgrammer:
 
                 print(f"locus: {locus}")
                 
-                # Ensure we have a readable integer index
+                # ensure we have a readable integer index
                 if not hasattr(locus.crange().left(), 'num'):
                     optimized.append(stmt)
                     i += 1
@@ -375,22 +375,22 @@ class QCtoQXProgrammer:
                 
                 # ─── COMPRESS THE SEQUENCE ───
                 if seq_length > 1:
-                    # Build the merged boundary: e.g., 0 to 15
+                    # build the merged boundary: e.g., 0 to 15
                     merged_crange = QXCRange(
                         left=QXNum(num=start_idx), 
                         right=QXNum(num=start_idx + seq_length)
                     )
                     
-                    # Create the unified memory location
+                    # create the unified memory location
                     merged_locus = QXQRange(
                         location=locus.location(), # This keeps 'q'
                         crange=merged_crange
                     )
                     
-                    # Build the broadcasted assignment
+                    # build the broadcasted assignment
                     merged_stmt = QXQAssign(
                         location=[merged_locus],
-                        exp=QXSingle(gate_name) # Or id=gate_name, matching your init signature
+                        exp=QXSingle(gate_name) 
                     )
                     
                     optimized.append(merged_stmt)

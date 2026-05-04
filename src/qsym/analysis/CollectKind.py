@@ -1,11 +1,13 @@
-from qsym.ast import Programmer
-from qsym.ast.ProgramVisitor import ProgramVisitor
+import Programmer
+from ProgramVisitor import ProgramVisitor
 from copy import deepcopy
 
-from qsym.ast.Programmer import *
+from Programmer import *
 
 
 def compareAExp(a1: QXAExp, a2: QXAExp):
+    if a1 is None and a2 is None:
+        return True
     if a1 is None or a2 is None:
         return False
     if isinstance(a1, QXBind) and isinstance(a2, QXBind):
@@ -28,7 +30,7 @@ def compareType(t1: QXType, t2: QXType):
         return False
     if isinstance(t1, TySingle) and isinstance(t2, TySingle):
         return t1.type() == t2.type()
-    if isinstance(t1, Programmer.TyQ) and isinstance(t2, TyQ):
+    if isinstance(t1, TyQ) and isinstance(t2, TyQ):
         return compareAExp(t1.flag(), t2.flag())
     return False
 
@@ -52,6 +54,7 @@ class CollectKind(ProgramVisitor):
         # check if a return variable is assigned
         # we use this list to remove variables
         self.reenv = []
+        self.errors = []
 
     def visitMethod(self, ctx: Programmer.QXMethod):
         x = str(ctx.ID())
@@ -73,7 +76,7 @@ class CollectKind(ProgramVisitor):
                 return False
             self.xenv.update({y: tv})
 
-        self.reenv = list(self.xenv.keys())
+        self.reenv = self.xenv.copy()
 
         for condelem in ctx.conds():
             condelem.accept(self)
@@ -88,13 +91,14 @@ class CollectKind(ProgramVisitor):
         return x_
 
     def visitProgram(self, ctx: Programmer.QXProgram):
-        for elem in ctx.topLevelStmts():
+        for elem in ctx.method():
             v = elem.accept(self)
             if not v:
                 return False
         return True
 
     def visitBind(self, ctx: Programmer.QXBind):
+        var_name = str(ctx.ID())
         ty = self.tenv.get(str(ctx.ID()))
 
         if ctx.type() is not None:
@@ -104,11 +108,9 @@ class CollectKind(ProgramVisitor):
         else:
             ty1 = self.xenv.get(str(ctx.ID()))
             if ty1 is None:
+                self.errors.append(f"CollectKind Error: Undefined classical variable '{var_name}' used.")
                 return False
-        #    del self.reenv[str(ctx.ID())]
-            if str(ctx.ID()) in self.reenv:
-        #        print(f"{self.reenv} removing {str(ctx.ID())}")
-                self.reenv.remove(str(ctx.ID()))
+            self.reenv.remove(var_name)
 
             if ctx.type() is not None:
                 return compareType(ty1, ctx.type())
@@ -121,8 +123,6 @@ class CollectKind(ProgramVisitor):
     def visitFun(self, ctx: Programmer.TyFun):
         return True
 
-    def visitQComp(self, ctx: Programmer.QXQComp):
-        return True
 
     def visitQ(self, ctx: Programmer.TyQ):
         return ctx.flag().accept(self)
@@ -161,13 +161,11 @@ class CollectKind(ProgramVisitor):
     
     def visitOracle(self, ctx: Programmer.QXOracle):
         v = True
-        for i in ctx.bindings():
-            if isinstance(i, QXBind):
-                i = i.ID()
+        for i in ctx.ids():
             if str(i) not in self.tenv:
                 self.tenv.update({str(i):QXQTy()})
         
-        for i in ctx.kets():
+        for i in ctx.vectors():
             v = v and i.accept(self)
         return v
     
@@ -175,10 +173,7 @@ class CollectKind(ProgramVisitor):
         return ctx.vector().accept(self)
 
     def visitQRange(self, ctx: Programmer.QXQRange):
-        v = True
-        v = v and ctx.crange().accept(self)
-            
-        return v
+        return ctx.crange().accept(self)
     
     def visitCRange(self, ctx: Programmer.QXCRange):
         return ctx.left().accept(self) and ctx.right().accept(self)
@@ -192,90 +187,60 @@ class CollectKind(ProgramVisitor):
         for elem in ctx.locus():
             v = v and elem.accept(self)
         for id in ctx.ids():
-            ty = self.tenv.get(id.ID())
+            ty = self.tenv.get(id)
             if ty is not None:
                 v = v and self.isBitType(ty)
             else:
-                ty1 = self.xenv.get(id.ID())
+                ty1 = self.xenv.get(id)
                 if ty1 is None:
                     return False
-#                del self.reenv[id.ID()]
-#                print(self.reenv, id.ID())
-                # if id.ID() in self.reenv:
-                #     self.reenv.remove(id.ID())
+                self.reenv.remove(id)
                 v = v and self.isBitType(ty1)
         return v
 
 
     def visitCAssign(self, ctx: Programmer.QXCAssign):
         v = ctx.aexp().accept(self)
-        v = v and str(ctx.ids())
+        v = v and str(ctx.ID())
         return v
 
     def visitIf(self, ctx: Programmer.QXIf):
-        v = ctx.bexp().accept(self)  if isinstance(ctx.bexp(), Programmer.QXBExp) else True
+        v = ctx.bexp().accept(self)
         for elem in ctx.stmts():
             v = v and elem.accept(self)
         return v
 
     def visitFor(self, ctx: Programmer.QXFor):
         v = ctx.crange().accept(self)
+
+        old_tenv = self.tenv.copy()
         self.tenv.update({str(ctx.ID()): TySingle("nat")})
 
         for ielem in ctx.inv():
             v = v and ielem.accept(self)
-        
-    #    print("\nvisiting for stmts", ctx.stmts())
+
         for elem in ctx.stmts():
             v = v and elem.accept(self)
+        
+        self.tenv = old_tenv
+
         return v
 
     def visitCall(self, ctx: Programmer.QXCall):
-        v = True
-        for elem in ctx.exps():
-            v = v and elem.accept(self)
-        return v
-        
-        
-        
-        
-        
-        
-        # if str(ctx.ID()) in self.env.keys():
-        #     v = True
-        #     for elem in ctx.exps():
-        #         v = v and elem.accept(self)
-        #         return v
-        #return False
-    def visitQSpec(self, ctx: Programmer.QXQSpec):
-        for elem in ctx.locus():
-            elem.accept(self)
-        for state in ctx.states():
-            state.accept(self)
-        ctx.qty().accept(self)
-        return True
+        func_name = str(ctx.ID())
+        if func_name in self.env.keys():
+            v = True
+            for elem in ctx.exps():
+                v = v and elem.accept(self)
+            return v
+        self.errors.append(f"CollectKind Error: Attempted to call undefined method '{func_name}'.")
+        return False
     
     def visitAssert(self, ctx: Programmer.QXAssert):
         if isinstance(ctx.spec(), QXQSpec):
             return True
         return ctx.spec().accept(self)
-    
-    def visitSingle(self, ctx: Programmer.QXSingle):
-        """Visit a single quantum operation"""
-        # We assume that the type of a single quantum operation is always valid
-        return True
-    
-    def visitInclude(self, ctx):
-        return True   
-    
-    #need to check if the asserted var is in the tenv or xenv
-    #leave the check later
-    def visitAll(self, ctx: Programmer.QXAll):
-        """Visit a QXAll operation"""
-        # We assume that the type of a QXAll operation is always valid
-        return True
 
     def get_kenv(self):
         """Returns the kenv used by TypeCollector and TypeChecker"""
         return self.env
-    

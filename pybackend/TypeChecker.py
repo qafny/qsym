@@ -66,29 +66,7 @@ def compareType(ty: QXQTy, ty1: QXQTy = None):
         else:
             return ty
 
-    if isinstance(ty, TyEn) and isinstance(ty1, TyNor):
-        return ty
-
-    if isinstance(ty, TyNor) and isinstance(ty1, TyEn):
-        return ty1
-
-    if isinstance(ty, TyHad) and isinstance(ty1, TyEn):
-        return ty1
-
-    if isinstance(ty, TyEn) and isinstance(ty1, TyHad):
-        return ty
-
-    if isinstance(ty, TyNor) and isinstance(ty1, TyHad):
-        return TyEn(QXNum(1))
-
-    if isinstance(ty, TyHad) and isinstance(ty1, TyNor):
-        return TyEn(QXNum(1))
-
-    if isinstance(ty, TyHad) and isinstance(ty1, TyHad):
-        return TyEn(QXNum(1))
-
-    if isinstance(ty, TyNor) and isinstance(ty1, TyNor):
-        return ty
+    return ty
 
 
 def compareSingle(qs: list[QXQRange], qv: list[QXQRange]):
@@ -134,44 +112,72 @@ def subLocusGen(q: list[QXQRange], qs: list[(list[QXQRange], QXQTy, int)]):
                 floc += elem
                 type = compareType(qty, type)
 
-        if isinstance(qty, TyNor) or isinstance(qty, TyHad):
-            re = compareSingle(q, elem)
-            if re is not None:
-                qxv, vs, qv = re
-                if vs == []:
-                    floc += [qxv]
-                    type = compareType(qty, type)
-                    rev += qv + (qs[i+1:len(qs)])
-                    return (floc, type, rev, num)
-                else:
-                    floc += [qxv]
-                    type = compareType(qty, type)
-                    rev += qv
-            else:
-                rev += [qs[i]]
-
-    
-
     sl = compareSubLocus(q, qs)
     
-    if len(sl)>0:
+    if len(sl) > 0:
         floc = []
-        for loc,ty,num in sl:
+        for loc, ty, num in sl:
             type = compareType(ty, type)
             floc.extend(loc)
 
-        
         slrev = []
-        for loc,qty,num in qs:
+        for loc, qty, num in qs:
             if loc not in floc:
-                slrev.append((loc,qty,num))
+                slrev.append((loc, qty, num))
         
         return (floc, type, slrev, -1)
     
-    if floc is not None:
+    if floc is not None and len(floc) > 0:
         return floc, type, rev, -1
     
     return None
+
+def subLocus(q: list[QXQRange] , qs: list[(list[QXQRange], QXQTy, int)]):
+    
+    qsf = []
+    for i in range(len(qs)):
+        elem, ty, num = qs[i]
+        vs = subRangeLoci(q, elem)
+        if vs is None:
+            qsf = qsf + [qs[i]]
+        elif vs == []:
+            qsf = qsf + qs[i+1:len(qs)]
+            return (ty, num, qsf)
+        else:
+            qsf += [(vs, ty, num)] + qs[i+1:len(qs)]
+            return (ty, num, qsf)
+
+    return None
+
+# def addOneType(ty : QXQTy):
+#     if isinstance(ty, TyEn):
+#         return TyEn(QXNum(ty.flag().num() + 1))
+#     return None
+
+#TODO
+def transition_type(gate_name: str, current_ty: QXQTy):
+    
+    if current_ty is None:
+        return None
+
+    # rank remains unchanged
+    if gate_name in ['X', 'Y', 'Z']:
+        return current_ty
+
+    # superposition introduced
+    if gate_name in ['H', 'QFT']:
+        if isinstance(current_ty, TyEn):
+            current_rank = current_ty.flag().num()
+            # rank 0 -> 1
+            if current_rank == 0:
+                return TyEn(QXNum(1))
+            # if it's already in a superposition or entangled state, applying another H 
+            # might change the basis, but it doesn't arbitrarily increase the tensor rank
+            # we need to think about if we want to optimize here or somewhere else
+            return current_ty
+
+    # if it's an unknown gate, return the current type safely
+    return current_ty
 
 def sameLocus(q: list[QXQRange], qs : list[(list[QXQRange], QXQTy, int)]):
     for i in range(len(qs)):
@@ -282,7 +288,6 @@ def substAllVars(l:list[SubstAExp], v:QXAExp):
 # for a given index in a function name f, we check the type information at location index in the function
 # the type env, is the initial type env getting from TypeCollector, no ending type env is needed.
 class TypeChecker(ProgramVisitor):
-
     def __init__(self, kenv: dict, tenv: dict, renv:list[(list[QXQRange], QXQTy, int)], counter : int):
         # need st --> state we are deling with
         #kind map from fun vars to kind maps
@@ -311,6 +316,7 @@ class TypeChecker(ProgramVisitor):
         #the generated type environment.
         self.renv = renv
         self.counter = counter
+        self.errors = []
 
     def kenv(self):
         return self.kinds
@@ -383,35 +389,46 @@ class TypeChecker(ProgramVisitor):
 
     def visitCAssign(self, ctx: Programmer.QXCAssign):
         return True
+    
+    def _extract_locus_from_bexp(self, bexp):
+        """Recursively extracts loci ranges from a quantum boolean expression."""
+        if hasattr(bexp, 'left') and hasattr(bexp, 'right'):
+            return self._extract_locus_from_bexp(bexp.left()) + self._extract_locus_from_bexp(bexp.right())
+        if hasattr(bexp, 'locus'): # Assuming the base comparison holds a locus
+            return bexp.locus()
+        return []
 
     def visitIf(self, ctx: Programmer.QXIf):
         if isinstance(ctx.bexp(), QXBool):
-            oldenv = self.renv
+            old_env = self.renv
             for elem in ctx.stmts():
                 elem.accept(self)
-            if equalEnv(oldenv, self.renv):
+            if equalEnv(old_env, self.renv):
                 return True
             else:
+                self.errors.append("TypeChecker Error: Classical IF branch mismatched environment state.")
                 return False
 
 
         if isinstance(ctx.bexp(), QXQBool):
-            findLocus = LocusCollector.LocusCollector()
-            findLocus.visit(ctx.bexp())
+            test_loci = self._extract_locus_from_bexp(ctx.bexp())
+            res = subLocusGen(test_loci, self.renv)
+            if res is None:
+               self.errors.append("TypeChecker Error: IF condition tests undefined locus.")
+               return False
 
-            floc, ty, nenv, num = subLocusGen(findLocus.renv, self.renv)
+            floc, ty, nenv, num = res
+            is_classical = isinstance(ty, TyEn) and ty.flag().num() == 0
 
-            if isinstance(ty, TyNor):
+            if is_classical:
                 for elem in ctx.stmts():
-                    elem.accept(self)
+                    if not elem.accept(self): return False
                 return True
-
-            for elem in ctx.stmts():
-                findLocus.visit(elem)
-            floc, ty, nenv, num = subLocusGen(findLocus.renv, self.renv)
-            self.renv = [(floc,ty, num)] + nenv
-            for elem in ctx.stmts():
-                elem.accept(self)
+            
+            else:
+                for elem in ctx.stmts():
+                    if not elem.accept(self): return False
+                self.renv = [(floc,ty, num)] + nenv
             return True
 
     def visitFor(self, ctx: Programmer.QXFor):

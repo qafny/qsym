@@ -6,6 +6,8 @@ from Programmer import *
 
 
 def compareAExp(a1: QXAExp, a2: QXAExp):
+    if a1 is None and a2 is None:
+        return True
     if a1 is None or a2 is None:
         return False
     if isinstance(a1, QXBind) and isinstance(a2, QXBind):
@@ -28,7 +30,7 @@ def compareType(t1: QXType, t2: QXType):
         return False
     if isinstance(t1, TySingle) and isinstance(t2, TySingle):
         return t1.type() == t2.type()
-    if isinstance(t1, Programmer.TyQ) and isinstance(t2, TyQ):
+    if isinstance(t1, TyQ) and isinstance(t2, TyQ):
         return compareAExp(t1.flag(), t2.flag())
     return False
 
@@ -52,6 +54,7 @@ class CollectKind(ProgramVisitor):
         # check if a return variable is assigned
         # we use this list to remove variables
         self.reenv = []
+        self.errors = []
 
     def visitMethod(self, ctx: Programmer.QXMethod):
         x = str(ctx.ID())
@@ -95,6 +98,7 @@ class CollectKind(ProgramVisitor):
         return True
 
     def visitBind(self, ctx: Programmer.QXBind):
+        var_name = str(ctx.ID())
         ty = self.tenv.get(str(ctx.ID()))
 
         if ctx.type() is not None:
@@ -104,8 +108,9 @@ class CollectKind(ProgramVisitor):
         else:
             ty1 = self.xenv.get(str(ctx.ID()))
             if ty1 is None:
+                self.errors.append(f"CollectKind Error: Undefined classical variable '{var_name}' used.")
                 return False
-            self.reenv.remove(str(ctx.ID()))
+            self.reenv.remove(var_name)
 
             if ctx.type() is not None:
                 return compareType(ty1, ctx.type())
@@ -208,21 +213,27 @@ class CollectKind(ProgramVisitor):
     def visitFor(self, ctx: Programmer.QXFor):
         v = ctx.crange().accept(self)
 
-        self.tenv.update({str(ctx.ID()), TySingle("nat")})
+        old_tenv = self.tenv.copy()
+        self.tenv.update({str(ctx.ID()): TySingle("nat")})
 
         for ielem in ctx.inv():
             v = v and ielem.accept(self)
 
         for elem in ctx.stmts():
             v = v and elem.accept(self)
+        
+        self.tenv = old_tenv
+
         return v
 
     def visitCall(self, ctx: Programmer.QXCall):
-        if str(ctx.ID()) in self.env.keys():
+        func_name = str(ctx.ID())
+        if func_name in self.env.keys():
             v = True
             for elem in ctx.exps():
                 v = v and elem.accept(self)
-                return v
+            return v
+        self.errors.append(f"CollectKind Error: Attempted to call undefined method '{func_name}'.")
         return False
     
     def visitAssert(self, ctx: Programmer.QXAssert):

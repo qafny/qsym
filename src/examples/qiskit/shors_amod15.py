@@ -74,7 +74,7 @@ def shors_circuit(a: int, N_COUNT: int):
     for q in range(N_COUNT):
         qc.append(c_amod15(a, 2**q),[q] + [i+N_COUNT for i in range(4)])
         # if (q[i]) { p[0, n) *= λ (x => |base ^ (2 ^ i) * x % N⟩); 
-    assertion_str = f"q[0, {N_COUNT}) : En ↦ ∑ j ∈ [0, 2^n) . 1/sqrt(2^n) |j⟩"
+    assertion_str = f"q[0, {N_COUNT}) : En ↦ ∑ j ∈ [0, 2^{N_COUNT}) . 1/sqrt(2^{N_COUNT}) |j⟩"
     qc.append(StateAssertion(assertion_str, N_COUNT), range(N_COUNT))
 
     # Do inverse-QFT

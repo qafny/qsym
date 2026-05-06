@@ -71,15 +71,26 @@ def discrete_log(a: int, b: int, p: int, show_hist: Optional[bool] = False, coef
     qc.append(ax_modM(a=b, M=p, N_len=t), list(first_register) + list(auxiliary_register_mid) + list(third_register) + list(auxiliary_register_end))
     qc.append(ax_modM(a=a, M=p, N_len=t, x_0_at_first=False), list(second_register) + list(auxiliary_register_mid) + list(third_register) + list(auxiliary_register_end))
 
-    # assert first_register[0,t), second_register[0,t): en ↦ ∑ ?
+    # assert first_register[0,t), second_register[0,t): en(2) ↦ ∑_{x ∈ [0,2^t)} ∑_{y ∈ [0,2^t)} (1 / 2^t)|x⟩ |y⟩ |(b^x * a^y) mod p⟩ ?
 
     qc.append(qft(n=t).inverse(), first_register)
     qc.append(qft(n=t).inverse(), second_register)
     
     # assert first_register[0,t), second_register[0,t): en ↦ ∑ ?
 
+
     qc.measure(list(first_register) + list(second_register), classical_register)
     #qc.measure(third_register, classical_register)
+
+    # ASSERT (measurement property):
+#
+# measuring first+second registers yields (l, β) such that:
+#
+#   β ≡ s l (mod r)
+#
+# with high probability
+#
+# and l ≠ 0 for successful recovery
 
     # assert - measured value can derive s
 

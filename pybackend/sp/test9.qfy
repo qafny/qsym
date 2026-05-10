@@ -1,0 +1,28 @@
+//Simple Had application
+method conditionaltest2(n:nat, q : Q[1], p : Q[n], base: nat, N:nat)
+  requires { q[0, 1) : had ↦ |+⟩ }
+  requires { p[0, n) : nor ↦ |0⟩ }
+  ensures  { q[0, 1), p[0 , n) : en(2) ↦ ∑ k ∈ [0, 2) . ∑ j ∈ [0, 2^n) . 1/sqrt(2^n) | k ⟩ | k*j ⟩ }
+{
+  // 
+  if (q[0]) { p[0, n) *= H; }
+  //(en)q[0, 1); //it is best if we do not need this
+}
+
+
+
+//sp(if C then S1 else S2, P) = sp(S1, C /\ P) \/ sp(S2, !C /\ P)
+
+/\ loc(u0) = q[0, 1)
+/\ value(u0) = |+⟩ = ∑ k ∈ [0, 2) . 1/sqrt(2) | k ⟩ 
+/\ value(u0.q[0]) == 1
+/\ loc(u) = q[0, 1), p[0, n) : en(2)
+/\ value(u) =  ∑ j ∈ [0, 2^n)  . 1/sqrt(2^n) | 1 ⟩ | j ⟩
+
+\/
+/\ loc(u0) = q[0, 1)
+/\ value(u0) = |+⟩ = ∑ k ∈ [0, 2) . 1/sqrt(2) | k ⟩ 
+/\ value(u0.q[0]) == 0
+/\ loc(u) = q[0, 1), p[0, n) : en(2)
+/\ value(u) =  ∑ j ∈ [0, 2^n)  . 1/sqrt(2^n) | 0 ⟩ | 0 ⟩
+

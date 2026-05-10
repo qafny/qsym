@@ -1,0 +1,10 @@
+{
+  "circuit_name": "PauliFeatureMap_2",
+  "class_name": "PauliFeatureMap",
+  "module": "qiskit.circuit.library.data_preparation.pauli_feature_map",
+  "description": "The Pauli Expansion circuit.\n\n    The Pauli Expansion circuit is a data encoding circuit that transforms input data\n    :math:`\\vec{x} \\in \\mathbb{R}^n`, where `n` is the ``feature_dimension``, as\n\n    .. math::\n\n        U_{\\Phi(\\vec{x})}=\\exp\\left(i\\sum_{S \\in \\mathcal{I}}\n        \\phi_S(\\vec{x})\\prod_{i\\in S} P_i\\right).\n\n    Here, :math:`S` is a set of qubit indices that describes the connections in the feature map,\n    :math:`\\mathcal{I}` is a set containing all these index sets, and\n    :ma",
+  "num_qubits": 2,
+  "num_clbits": 0,
+  "specification": "\nCircuit: PauliFeatureMap_2\nQubits: 2\nClassical bits: 0\nDepth: 1\nSize: 1\n\nExpected Behavior:\n- Circuit should compile to XMLProgrammer AST without errors\n- AST should be valid according to SimulatorValidator\n- Simulator should execute without runtime errors\n- Output state should be consistent with circuit semantics\n",
+  "expected_behavior": "Circuit from PauliFeatureMap class"
+}

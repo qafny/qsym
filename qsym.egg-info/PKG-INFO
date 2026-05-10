@@ -1,0 +1,69 @@
+Metadata-Version: 2.4
+Name: qsym
+Version: 0.1.0
+Summary: Quantum Symbolic Execution
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+License-File: LICENSE
+License-File: LICENSE.save0
+Requires-Dist: z3-solver>=4.14.1.0
+Requires-Dist: antlr4-python3-runtime==4.9.2
+Requires-Dist: hypothesis>=6.125.3
+Requires-Dist: rich>=14.2.0
+Requires-Dist: sympy>=1.13.3
+Provides-Extra: dev
+Requires-Dist: antlr4-tools>=0.2.1; extra == "dev"
+Requires-Dist: install-jdk>=1.1.0; extra == "dev"
+Requires-Dist: pytest; extra == "dev"
+Dynamic: license-file
+
+# QSym
+
+The project designs a symbolic execution engine for quantum programs based on Qafny.
+
+## Requirements
+
+* Python **3.10+** 
+
+
+
+## Install
+
+From the repo root:
+
+```bash
+pip install -e .
+```
+
+## Quick Start
+
+Show CLI help:
+
+```bash
+python -m qsym --help
+```
+
+Run an example script:
+
+```bash
+python examples/runners/run_qafny_examples.py
+```
+
+
+## Repo Layout
+
+* `src/qsym/`: Core symbolic engine 
+
+* `src/qsym/ast/`: Qafny AST + visitor base
+
+* `src/qsym/analysis/`: Analysis passes (e.g., substitution)
+
+* `src/qsym/parsers/`: qafny/qiskit parsers
+
+* `examples/`: example programs (Qafny / Qiskit sources)
+    * `examples/runners/`: Python entry scripts
+    * `examples/qafny/`: `.qfy` programs
+    * `examples/qiskit/`: Qiskit circuits (`.py`)
+
+
+

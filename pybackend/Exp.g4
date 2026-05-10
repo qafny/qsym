@@ -42,9 +42,11 @@ partspec: 'part' '(' arithExpr ',' arithExpr ',' arithExpr ',' arithExpr ')';
 
 tensorall : '⊗' ID '.' manyket | '⊗' ID TIn crange '.' manyket;
 
-sumspec : maySum arithExpr manyket;
+sumspec : maySum manyAmp manyket (addOp maySum manyAmp manyket)*;
 
-maySum : TSum ID TIn crange '.' (TSum ID TIn crange '.')*;
+manyAmp: arithExpr (mulOp arithExpr)* (mulOp '('chainBExp')')*;
+
+maySum : (TSum ID TIn crange '.')? (TSum ID TIn crange '.')*;
 
 asserting: 'assert' spec ';';
 
@@ -68,7 +70,7 @@ fcall : ID '(' arithExprs ')';
 
 arithExprs : arithExpr (',' arithExpr)*;
 
-arithExpr: arithAtomic op arithExpr | arithAtomic;
+arithExpr: arithAtomic | arithAtomic op arithExpr;
 
 arithAtomic: numexp | ID
           | '(' arithExpr ')'
@@ -126,6 +128,8 @@ baseTy : TNat | TReal | TInt | TBool | '[' baseTy ','  arithExpr ']' | 'Q' '[' a
 qty : Nor | Had | En | En '(' arithExpr ')' | AA;
 
 addOp: TAdd | TSub;
+
+mulOp: TMul;
 
 op : addOp | TDiv | TMul | TMod | OPlus | TExp;
 

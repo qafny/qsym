@@ -1,0 +1,2 @@
+// result should be x[0] becomes not x[0], x[1] the same, y[1] qubit becomes ((not x[0] and x[1]) xor y[1])
+<pexp gate = 'X' > <id> x </id>  <vexp> 0 </vexp> </pexp> <pexp gate = 'CU' > <id> x </id> < vexp> 0 </vexp>  <pexp gate = 'CU' > <id> x </id>  <vexp> 1 </vexp> <pexp gate = 'X' > <id> y </id>  <vexp> 1 </vexp> </pexp> </pexp>  </pexp> 

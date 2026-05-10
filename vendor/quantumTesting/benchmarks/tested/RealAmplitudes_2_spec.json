@@ -1,0 +1,10 @@
+{
+  "circuit_name": "RealAmplitudes_2",
+  "class_name": "RealAmplitudes",
+  "module": "qiskit.circuit.library.n_local.real_amplitudes",
+  "description": "The real-amplitudes 2-local circuit.\n\n    The ``RealAmplitudes`` circuit is a heuristic trial wave function used as Ansatz in chemistry\n    applications or classification circuits in machine learning. The circuit consists of\n    alternating layers of :math:`Y` rotations and :math:`CX` entanglements. The entanglement\n    pattern can be user-defined or selected from a predefined set.\n    It is called ``RealAmplitudes`` since the prepared quantum states will only have\n    real amplitudes, the compl",
+  "num_qubits": 2,
+  "num_clbits": 0,
+  "specification": "\nCircuit: RealAmplitudes_2\nQubits: 2\nClassical bits: 0\nDepth: 1\nSize: 1\n\nExpected Behavior:\n- Circuit should compile to XMLProgrammer AST without errors\n- AST should be valid according to SimulatorValidator\n- Simulator should execute without runtime errors\n- Output state should be consistent with circuit semantics\n",
+  "expected_behavior": "Circuit from RealAmplitudes class"
+}

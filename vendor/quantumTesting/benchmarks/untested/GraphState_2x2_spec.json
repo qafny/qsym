@@ -1,0 +1,10 @@
+{
+  "circuit_name": "GraphState_2x2",
+  "class_name": "GraphState",
+  "module": "qiskit.circuit.library.graph_state",
+  "description": "Circuit to prepare a graph state.\n\n    Given a graph G = (V, E), with the set of vertices V and the set of edges E,\n    the corresponding graph state is defined as\n\n    .. math::\n\n        |G\\rangle = \\prod_{(a,b) \\in E} CZ_{(a,b)} {|+\\rangle}^{\\otimes V}\n\n    Such a state can be prepared by first preparing all qubits in the :math:`+`\n    state, then applying a :math:`CZ` gate for each corresponding graph edge.\n\n    Graph state preparation circuits are Clifford circuits, and thus\n    easy to simulate classically. However, by adding a layer of measurements\n    in a product basis at the end, there is evidence that the circuit becomes\n    hard to simulate [2].\n\n    Reference Circuit:\n\n    .. plot::\n       :alt: Diagram illustrating the previously described circuit.\n\n       from qiskit.circuit.library import GraphState\n       from qiskit.visualization.library import _generate_circuit_library_visualization\n       import rustworkx as rx\n       G = rx.generators.cycle_graph(5)\n       circuit = GraphState(rx.adjacency_matrix(G))\n       circuit.name = \"Graph state\"\n       _generate_circuit_library_visualization(circuit)\n\n    References:\n\n    [1] M. Hein, J. Eisert, H.J. Briegel, Multi-party Entanglement in Graph States,\n        `arXiv:0307130 <https://arxiv.org/pdf/quant-ph/0307130.pdf>`_\n    [2] D. Koh, Further Extensions of Clifford Circuits & their Classical Simulation Complexities.\n        `arXiv:1512.07892 <https://arxiv.org/pdf/1512.07892.pdf>`_\n    ",
+  "num_qubits": 2,
+  "num_clbits": 0,
+  "specification": "\nCircuit: GraphState_2x2\nQubits: 2\nClassical bits: 0\nDepth: 1\nSize: 1\n\nExpected Behavior:\n- Circuit should compile to XMLProgrammer AST without errors\n- AST should be valid according to SimulatorValidator\n- Simulator should execute without runtime errors\n- Output state should be consistent with circuit semantics\n",
+  "expected_behavior": "Creates graph state"
+}

@@ -1,0 +1,10 @@
+{
+  "circuit_name": "DraperQFTAdder_2",
+  "class_name": "DraperQFTAdder",
+  "module": "qiskit.circuit.library.arithmetic.adders.draper_qft_adder",
+  "description": "A circuit that uses QFT to perform in-place addition on two qubit registers.\n\n    For registers with :math:`n` qubits, the QFT adder can perform addition modulo\n    :math:`2^n` (with ``kind=\"fixed\"``) or ordinary addition by adding a carry qubits (with\n    ``kind=\"half\"``).\n\n    As an example, a non-fixed_point QFT adder circuit that performs addition on two 2-qubit sized\n    registers is as follows:\n\n    .. code-block:: text\n\n         a_0:   \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u25a0\u2500\u2500\u2500\u2500\u2500\u2500\u25a0\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u25a0\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+  "num_qubits": 4,
+  "num_clbits": 0,
+  "specification": "\nCircuit: DraperQFTAdder_2\nQubits: 4\nClassical bits: 0\nDepth: 1\nSize: 1\n\nExpected Behavior:\n- Circuit should compile to XMLProgrammer AST without errors\n- AST should be valid according to SimulatorValidator\n- Simulator should execute without runtime errors\n- Output state should be consistent with circuit semantics\n",
+  "expected_behavior": "Circuit from DraperQFTAdder class"
+}

@@ -119,6 +119,11 @@ class ExpVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by ExpParser#manyAmp.
+    def visitManyAmp(self, ctx:ExpParser.ManyAmpContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by ExpParser#maySum.
     def visitMaySum(self, ctx:ExpParser.MaySumContext):
         return self.visitChildren(ctx)
@@ -301,6 +306,11 @@ class ExpVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by ExpParser#addOp.
     def visitAddOp(self, ctx:ExpParser.AddOpContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by ExpParser#mulOp.
+    def visitMulOp(self, ctx:ExpParser.MulOpContext):
         return self.visitChildren(ctx)
 
 

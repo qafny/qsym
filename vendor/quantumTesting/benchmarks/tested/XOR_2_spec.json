@@ -1,0 +1,10 @@
+{
+  "circuit_name": "XOR_2",
+  "class_name": "XOR",
+  "module": "qiskit.circuit.library.boolean_logic.quantum_xor",
+  "description": "An n_qubit circuit for bitwise xor-ing the input with some integer ``amount``.\n\n    The ``amount`` is xor-ed in bitstring form with the input.\n\n    This circuit can also represent addition by ``amount`` over the finite field GF(2).\n    ",
+  "num_qubits": 2,
+  "num_clbits": 0,
+  "specification": "\nCircuit: XOR_2\nQubits: 2\nClassical bits: 0\nDepth: 1\nSize: 1\n\nExpected Behavior:\n- Circuit should compile to XMLProgrammer AST without errors\n- AST should be valid according to SimulatorValidator\n- Simulator should execute without runtime errors\n- Output state should be consistent with circuit semantics\n",
+  "expected_behavior": "Circuit from XOR class"
+}

@@ -1,0 +1,10 @@
+{
+  "circuit_name": "LinearPauliRotations_2",
+  "class_name": "LinearPauliRotations",
+  "module": "qiskit.circuit.library.arithmetic.linear_pauli_rotations",
+  "description": "Linearly-controlled X, Y or Z rotation.\n\n    For a register of state qubits :math:`|x\\rangle`, a target qubit :math:`|0\\rangle` and the\n    basis ``'Y'`` this circuit acts as:\n\n    .. code-block:: text\n\n            q_0: \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u25a0\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 ... \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n                                          \u2502\n                                          .\n                                          \u2502\n        q_(n-1): \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 ... \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u25a0\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n     ",
+  "num_qubits": 3,
+  "num_clbits": 0,
+  "specification": "\nCircuit: LinearPauliRotations_2\nQubits: 3\nClassical bits: 0\nDepth: 1\nSize: 1\n\nExpected Behavior:\n- Circuit should compile to XMLProgrammer AST without errors\n- AST should be valid according to SimulatorValidator\n- Simulator should execute without runtime errors\n- Output state should be consistent with circuit semantics\n",
+  "expected_behavior": "Circuit from LinearPauliRotations class"
+}

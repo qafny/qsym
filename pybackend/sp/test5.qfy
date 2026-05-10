@@ -1,0 +1,18 @@
+//Simple lambda application
+method lambdatest(n:nat, q : Q[n], k : nat)
+  requires { q[0, n) : nor ↦ | k ⟩ }
+  ensures  { q[0, n) : nor ↦ | (k + 1) % 2^n ⟩ }
+{
+
+  q[0, n) *= λ (x => |x + 1⟩);
+}
+
+predicate: { q[0, n) : nor ↦ | k ⟩ }
+
+loc(u) = q[0, n) : nor ↦ | k ⟩ 
+{
+  q[0, n) *= λ (x => |x + 1⟩);
+}
+
+∃u0. loc(u0) = q[0, n) : nor ↦ | k ⟩ 
+        /\ loc(u) = q[0, n) : nor ↦ | k + 1 ⟩

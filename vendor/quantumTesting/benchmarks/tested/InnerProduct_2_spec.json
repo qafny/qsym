@@ -1,0 +1,10 @@
+{
+  "circuit_name": "InnerProduct_2",
+  "class_name": "InnerProduct",
+  "module": "qiskit.circuit.library.boolean_logic.inner_product",
+  "description": "A 2n-qubit Boolean function that computes the inner product of\n    two n-qubit vectors over :math:`F_2`.\n\n    This implementation is a phase oracle which computes the following transform.\n\n    .. math::\n\n        \\mathcal{IP}_{2n} : F_2^{2n} \\rightarrow {-1, 1}\n        \\mathcal{IP}_{2n}(x_1, \\cdots, x_n, y_1, \\cdots, y_n) = (-1)^{x.y}\n\n    The corresponding unitary is a diagonal, which induces a -1 phase on any inputs\n    where the inner product of the top and bottom registers is 1. Otherwise it ",
+  "num_qubits": 4,
+  "num_clbits": 0,
+  "specification": "\nCircuit: InnerProduct_2\nQubits: 4\nClassical bits: 0\nDepth: 1\nSize: 1\n\nExpected Behavior:\n- Circuit should compile to XMLProgrammer AST without errors\n- AST should be valid according to SimulatorValidator\n- Simulator should execute without runtime errors\n- Output state should be consistent with circuit semantics\n",
+  "expected_behavior": "Circuit from InnerProduct class"
+}

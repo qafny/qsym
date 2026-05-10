@@ -1,0 +1,10 @@
+{
+  "circuit_name": "PolynomialPauliRotations_2",
+  "class_name": "PolynomialPauliRotations",
+  "module": "qiskit.circuit.library.arithmetic.polynomial_pauli_rotations",
+  "description": "A circuit implementing polynomial Pauli rotations.\n\n    For a polynomial :math:`p(x)`, a basis state :math:`|i\\rangle` and a target qubit\n    :math:`|0\\rangle` this operator acts as:\n\n    .. math::\n\n        |i\\rangle |0\\rangle \\mapsto \\cos\\left(\\frac{p(i)}{2}\\right) |i\\rangle |0\\rangle\n        + \\sin\\left(\\frac{p(i)}{2}\\right) |i\\rangle |1\\rangle\n\n    Let n be the number of qubits representing the state, d the degree of p(x) and q_i the qubits,\n    where q_0 is the least significant qubit. Then ",
+  "num_qubits": 3,
+  "num_clbits": 0,
+  "specification": "\nCircuit: PolynomialPauliRotations_2\nQubits: 3\nClassical bits: 0\nDepth: 1\nSize: 1\n\nExpected Behavior:\n- Circuit should compile to XMLProgrammer AST without errors\n- AST should be valid according to SimulatorValidator\n- Simulator should execute without runtime errors\n- Output state should be consistent with circuit semantics\n",
+  "expected_behavior": "Circuit from PolynomialPauliRotations class"
+}

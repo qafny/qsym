@@ -1,0 +1,10 @@
+{
+  "circuit_name": "PauliTwoDesign_2",
+  "class_name": "PauliTwoDesign",
+  "module": "qiskit.circuit.library.n_local.pauli_two_design",
+  "description": "The Pauli Two-Design ansatz.\n\n    This class implements a particular form of a 2-design circuit [1], which is frequently studied\n    in quantum machine learning literature, such as e.g. the investigating of Barren plateaus in\n    variational algorithms [2].\n\n    The circuit consists of alternating rotation and entanglement layers with\n    an initial layer of :math:`\\sqrt{H} = RY(\\pi/4)` gates.\n    The rotation layers contain single qubit Pauli rotations, where the axis is chosen uniformly\n    at",
+  "num_qubits": 2,
+  "num_clbits": 0,
+  "specification": "\nCircuit: PauliTwoDesign_2\nQubits: 2\nClassical bits: 0\nDepth: 1\nSize: 1\n\nExpected Behavior:\n- Circuit should compile to XMLProgrammer AST without errors\n- AST should be valid according to SimulatorValidator\n- Simulator should execute without runtime errors\n- Output state should be consistent with circuit semantics\n",
+  "expected_behavior": "Circuit from PauliTwoDesign class"
+}

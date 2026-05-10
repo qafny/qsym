@@ -1,0 +1,10 @@
+{
+  "circuit_name": "QuantumVolume_2",
+  "class_name": "QuantumVolume",
+  "module": "qiskit.circuit.library.quantum_volume",
+  "description": "A quantum volume model circuit.\n\n    The model circuits are random instances of circuits used to measure\n    the Quantum Volume metric, as introduced in [1].\n\n    The model circuits consist of layers of Haar random\n    elements of SU(4) applied between corresponding pairs\n    of qubits in a random bipartition.\n\n    Reference Circuit:\n\n    .. plot::\n       :alt: Diagram illustrating the previously described circuit.\n\n       from qiskit.circuit.library import QuantumVolume\n       circuit = Quantum",
+  "num_qubits": 2,
+  "num_clbits": 0,
+  "specification": "\nCircuit: QuantumVolume_2\nQubits: 2\nClassical bits: 0\nDepth: 1\nSize: 1\n\nExpected Behavior:\n- Circuit should compile to XMLProgrammer AST without errors\n- AST should be valid according to SimulatorValidator\n- Simulator should execute without runtime errors\n- Output state should be consistent with circuit semantics\n",
+  "expected_behavior": "Circuit from QuantumVolume class"
+}

@@ -1,0 +1,27 @@
+//Simple Had application
+method lambdatest(n:nat, q : Q[n], k:nat)
+  requires { q[0, n) : nor ↦ |0⟩ }
+  ensures  { q[0, n) : en(1) ↦ ∑ j ∈ [0, 2^n) . 1 / sqrt(2^n) * | (j + 1) % 2^n ⟩ }
+{
+  // induce superposition on the first qubit
+  q[0,n) *= H;//should have an autocasting 
+  //(en)q[0,n); //it is best if we do not need this
+  q[0, n) *= λ (x => |x + 1⟩);
+}
+
+//sp(S1;S2, P) = sp(S2, sp(S1, P))
+predicate: q[0, n) : nor ↦ |0⟩ 
+loc(u) = q[0, n) : nor ↦ |0⟩ 
+{
+  q[0,n) *= H; // λ (x => |+⟩)
+}
+
+∃u0. loc(u0) = q[0, n) : nor ↦ |0⟩ /\ loc(u) = q[0, n) : had ↦ |+⟩ === 
+                                 loc(u) = q[0, n) : en(1) ↦ ∑ j ∈ [0, 2^n) . 1 / sqrt(2^n) * |j⟩
+{
+  q[0, n) *= λ (x => |x + 1⟩);
+}
+
+∃u0. loc(u0) = q[0, n) : nor ↦ |0⟩ /\ ∃u1. loc(u1) = q[0, n) : en(1) ↦ ∑ j ∈ [0, 2^n) . 1 / sqrt(2^n) * |j⟩
+/\ loc(u) = q[0, n) : en(1) ↦ ∑ j ∈ [0, 2^n) . 1 / sqrt(2^n) * |j + 1⟩ === 
+loc(u) = q[0, n) : en(1) ↦ ∑ j ∈ [0, 2^n) . 1 / sqrt(2^n) * | (j + 1) % 2^n ⟩

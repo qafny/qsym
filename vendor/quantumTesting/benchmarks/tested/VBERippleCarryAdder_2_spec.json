@@ -1,0 +1,10 @@
+{
+  "circuit_name": "VBERippleCarryAdder_2",
+  "class_name": "VBERippleCarryAdder",
+  "module": "qiskit.circuit.library.arithmetic.adders.vbe_ripple_carry_adder",
+  "description": "The VBE ripple carry adder [1].\n\n    This circuit performs inplace addition of two equally-sized quantum registers.\n    As an example, a classical adder circuit that performs full addition (i.e. including\n    a carry-in bit) on two 2-qubit sized registers is as follows:\n\n    .. code-block:: text\n\n                  \u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510                       \u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2510\n           cin_0: \u25240       \u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u25240          \u251c\u25240     \u251c\n                  \u2502        \u2502                       \u2502    ",
+  "num_qubits": 7,
+  "num_clbits": 0,
+  "specification": "\nCircuit: VBERippleCarryAdder_2\nQubits: 7\nClassical bits: 0\nDepth: 1\nSize: 1\n\nExpected Behavior:\n- Circuit should compile to XMLProgrammer AST without errors\n- AST should be valid according to SimulatorValidator\n- Simulator should execute without runtime errors\n- Output state should be consistent with circuit semantics\n",
+  "expected_behavior": "Circuit from VBERippleCarryAdder class"
+}

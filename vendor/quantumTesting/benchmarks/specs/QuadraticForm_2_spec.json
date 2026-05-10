@@ -1,0 +1,10 @@
+{
+  "circuit_name": "QuadraticForm_2",
+  "class_name": "QuadraticForm",
+  "module": "qiskit.circuit.library.arithmetic.quadratic_form",
+  "description": "Implements a quadratic form on binary variables encoded in qubit registers.\n\n    A quadratic form on binary variables is a quadratic function :math:`Q` acting on a binary\n    variable of :math:`n` bits, :math:`x = x_0 ... x_{n-1}`. For an integer matrix :math:`A`,\n    an integer vector :math:`b` and an integer :math:`c` the function can be written as\n\n    .. math::\n\n        Q(x) = x^T A x + x^T b + c\n\n    If :math:`A`, :math:`b` or :math:`c` contain scalar values, this circuit computes only\n    ",
+  "num_qubits": 3,
+  "num_clbits": 0,
+  "specification": "\nCircuit: QuadraticForm_2\nQubits: 3\nClassical bits: 0\nDepth: 1\nSize: 1\n\nExpected Behavior:\n- Circuit should compile to XMLProgrammer AST without errors\n- AST should be valid according to SimulatorValidator\n- Simulator should execute without runtime errors\n- Output state should be consistent with circuit semantics\n",
+  "expected_behavior": "Circuit from QuadraticForm class"
+}

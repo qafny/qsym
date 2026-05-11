@@ -1,0 +1,6 @@
+Benchmarks to add:
+BellPair, amplitude estimation, BV algorithm, Deutsch Jozsa, Discrete Log, 
+QPE, GHZ, Hidden-subgroup (mayb), QFTModQ, Shor's, Simon, swap-test, teleportation, 
+superdense, LCU, QFT-adder, ripple-carry-adder, QFT, mod-mult.
+
+Source: Qiskit community. Can have different implementations of same circuit.
